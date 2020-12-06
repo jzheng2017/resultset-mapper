@@ -61,6 +61,16 @@ List<User> users = r.map(resultSet, User.class);
 ```
 Way more cleaner, right? Imagine doing the first example for every different query, that would be a lot of code.. The library also provides very extensive logging, making it very easy to spot errors when it occurs.
 
+## Installation
+### Maven
+```xml
+<dependency>
+  <groupId>nl.jiankai</groupId>
+  <artifactId>resultset-mapper</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
+
 ## License
 See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
 
