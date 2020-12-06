@@ -1,14 +1,9 @@
 package nl.jiankai.mapper.strategies;
 
-import java.util.Arrays;
-
 public class LowerCaseUnderscoreFieldNamingStrategy implements FieldNamingStrategy {
     @Override
     public String transform(String fieldName) {
-        String[] splitByCapital = fieldName.split("(?=\\p{Lu})");
-        splitByCapital = Arrays.stream(splitByCapital)
-                .map(String::toLowerCase)
-                .toArray(String[]::new);
+        String[] splitByCapital = StringUtil.splitStringByCapitalLetter(fieldName);
 
         return String.join("_", splitByCapital);
     }
