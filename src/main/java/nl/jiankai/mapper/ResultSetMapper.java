@@ -51,17 +51,24 @@ public class ResultSetMapper {
      * @return list of the mapped objects
      */
     public <T> List<T> map(ResultSet resultSet, Class<T> destinationClass) {
-        logger.info(String.format("Commencing mapping ResultSet to %s", destinationClass));
-        Map<String, Field> fields = getFields(destinationClass);
         List<T> list = new ArrayList<>();
 
         try {
+            if (resultSet == null || !resultSet.isBeforeFirst()) {
+                logger.warn("An empty ResultSet has been passed in! Empty list will be returned.");
+                return new ArrayList<>();
+            }
+
+            logger.info(String.format("Commencing mapping ResultSet to %s", destinationClass));
+            Map<String, Field> fields = getFields(destinationClass);
+
+
             while (resultSet.next()) {
                 logger.trace(String.format("Adding new %s to the list", destinationClass));
                 list.add(createObject(resultSet, destinationClass, fields));
             }
         } catch (SQLException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException ex) {
-            logger.error("Something has gone wrong while mapping! Exception: " + ex.getMessage());
+            logger.error("Something has gone wrong! Exception: " + ex.getMessage());
         }
 
         logger.info(String.format("ResultSet has been successfully mapped to %s", destinationClass));
