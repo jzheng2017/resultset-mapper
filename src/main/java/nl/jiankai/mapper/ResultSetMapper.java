@@ -29,7 +29,7 @@ public class ResultSetMapper {
      */
     public ResultSetMapper() {
         this.fieldNamingStrategy = new IdentityFieldNamingStrategy();
-        logger.info(String.format("No specific field naming strategy has been set. It will default to the %s field naming strategy.", this.fieldNamingStrategy));
+        logger.info("No specific field naming strategy has been set. It will default to the {} field naming strategy.", this.fieldNamingStrategy);
     }
 
     /**
@@ -38,7 +38,7 @@ public class ResultSetMapper {
      * @param fieldNamingStrategy the field naming strategy to be used for mapping field names
      */
     public ResultSetMapper(final FieldNamingStrategy fieldNamingStrategy) {
-        logger.info(String.format("The %s field naming strategy will be used for mapping.", fieldNamingStrategy));
+        logger.info("The {} field naming strategy will be used for mapping.", fieldNamingStrategy);
         this.fieldNamingStrategy = fieldNamingStrategy;
     }
 
@@ -59,19 +59,19 @@ public class ResultSetMapper {
                 return new ArrayList<>();
             }
 
-            logger.info(String.format("Commencing mapping ResultSet to %s", destinationClass));
+            logger.info("Commencing mapping ResultSet to {}", destinationClass);
             final Map<String, Field> fields = getFields(destinationClass);
 
 
             while (resultSet.next()) {
-                logger.trace(String.format("Adding new %s to the list", destinationClass));
+                logger.trace("Adding new {} to the list", destinationClass);
                 list.add(createObject(resultSet, destinationClass, fields));
             }
         } catch (SQLException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException ex) {
             logger.error("Something has gone wrong! Exception: " + ex.getMessage());
         }
 
-        logger.info(String.format("ResultSet has been successfully mapped to %s", destinationClass));
+        logger.info("ResultSet has been successfully mapped to {}", destinationClass);
         return list;
     }
 
@@ -94,20 +94,20 @@ public class ResultSetMapper {
      * @return an instance of the destination class
      */
     private <T> T createObject(ResultSet resultSet, Class<T> destinationClass, Map<String, Field> fields) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        logger.trace(String.format("Constructing new %s instance", destinationClass));
+        logger.trace("Constructing new {} instance", destinationClass);
         final T dto = destinationClass.getConstructor().newInstance();
 
         for (Map.Entry<String, Field> entry : fields.entrySet()) {
             final String key = entry.getKey();
 
             try {
-                logger.trace(String.format("Retrieving %s from the ResultSet", key));
+                logger.trace("Retrieving {} from the ResultSet", key);
                 final Object value = resultSet.getObject(key);
-                logger.debug(String.format("Retrieval of %s has resulted to: %s", key, value));
+                logger.debug("Retrieval of {} has resulted to: {}", key, value);
 
                 final Field field = entry.getValue();
 
-                logger.trace(String.format("Setting the value %s to the field %s", value, field.getName()));
+                logger.trace("Setting the value {} to the field {}", value, field.getName());
                 field.set(dto, value);
             } catch (SQLException ex) {
                 logger.warn(ex.getMessage());
@@ -126,7 +126,7 @@ public class ResultSetMapper {
      */
     private <T> Map<String, Field> getFields(final Class<T> destinationClass) {
         final Map<String, Field> mappedFields = new HashMap<>();
-        logger.trace(String.format("Retrieving all declared fields for class: %s", destinationClass));
+        logger.trace("Retrieving all declared fields for class: {}", destinationClass);
         final Field[] declaredFields = destinationClass.getDeclaredFields();
 
         for (Field field : declaredFields) {
@@ -145,23 +145,23 @@ public class ResultSetMapper {
     private void mapFieldName(Map<String, Field> mappedFields, Field field) {
         final String fieldName = field.getName();
 
-        logger.trace(String.format("Retrieving @Column annotation for field: %s", fieldName));
+        logger.trace("Retrieving @Column annotation for field: {}", fieldName);
         final Column columnAnnotation = field.getAnnotation(Column.class);
 
-        logger.trace(String.format("Setting %s to accessibility to true", fieldName));
+        logger.trace("Setting {} to accessibility to true", fieldName);
         field.setAccessible(true);
 
         if (columnAnnotation != null) {
             final String columnName = columnAnnotation.name();
 
-            logger.trace(String.format("@Column annotation found for %s", fieldName));
-            logger.trace(String.format("The field name strategy will be overruled. Mapping %s to %s", fieldName, columnName));
+            logger.trace("@Column annotation found for {}", fieldName);
+            logger.trace("The field name strategy will be overruled. Mapping {} to {}", fieldName, columnName);
             mappedFields.put(columnName, field);
         } else {
             final String transformedName = fieldNamingStrategy.transform(fieldName);
 
-            logger.trace(String.format("No @Column annotation found for %s", fieldName));
-            logger.trace(String.format("Mapping %s to %s", fieldName, transformedName));
+            logger.trace("No @Column annotation found for {}", fieldName);
+            logger.trace("Mapping {} to {}", fieldName, transformedName);
             mappedFields.put(transformedName, field);
         }
     }
