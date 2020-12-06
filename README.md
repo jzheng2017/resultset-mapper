@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/nl.jiankai/resultset-mapper.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.jiankai%22%20AND%20a:%22resultset-mapper%22) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jzheng2017/resultset-mapper.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jzheng2017/resultset-mapper/context:java)
+[![Maven Central](https://img.shields.io/maven-central/v/nl.jiankai/resultset-mapper.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.jiankai%22%20AND%20a:%22resultset-mapper%22) [![Build Status](https://travis-ci.com/jzheng2017/resultset-mapper.svg?branch=main)](https://travis-ci.com/jzheng2017/resultset-mapper) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jzheng2017/resultset-mapper.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jzheng2017/resultset-mapper/context:java)
 # ResultSet Mapper
 ResultSet Mapper is a small lightweight library that allows you to map a `ResultSet` object to a desired java object by passing in its type.
 ## Example usages
