@@ -41,8 +41,8 @@ List<User> users = new ArrayList();
 while (resultSet.next()){
     User user = new User();
     user.setId(resultSet.getInt("id");
-    user.setFirstName(resultSet.getString("first_name));
-    user.setLastName(resultSet.getString("last_name));
+    user.setFirstName(resultSet.getString("first_name"));
+    user.setLastName(resultSet.getString("last_name"));
     user.setEmail(resultSet.getString("email"));
     
     users.add(user);
