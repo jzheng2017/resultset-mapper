@@ -26,8 +26,10 @@ List<User> users = r.map(resultSet, User.class);
 The library provides out of the box a few field naming strategies.
 #### IdentityFieldNamingStrategy
 This strategy leaves the field names unchanged.
-#### LowercaseUnderscoreFieldNamingStrategy
-This strategy maps the field names to lowercase underscore. For instance `firstName` would map to `first_name`.
+#### LowerCaseUnderscoreFieldNamingStrategy
+This strategy maps the field names to lowercase with underscores. For instance `firstName` would map to `first_name`.
+#### LowerCaseDashesFieldNamingStrategy
+This strategy maps the field names to lowercase with dashes. For instance `firstName` would map to `first-name`.
 #### Custom field naming strategy
 It is possible to make your own field naming strategy. It is done by implementing the `FieldNamingStrategy` interface. It has one function `transform` which transforms the original field name. The concrete `FieldNamingStrategy` implementation can then be injected through the constructor.
 ```java
