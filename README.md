@@ -5,7 +5,7 @@ ResultSet Mapper allows you to map a `ResultSet` to a desired java object by pas
 ## Example usages
 
 ### Model object
-Define a java object you want to map to. Use the `@Column` annotation override the `FieldNamingStrategy`
+Define a java object you want to map to. Use the `@Column` annotation to override the `FieldNamingStrategy`
 ```java
 public class User {
     private int id;
@@ -33,3 +33,9 @@ This strategy leaves the field names unchanged.
 This strategy maps the field names to lowercase underscore. For instance `firstName` would map to `first_name`.
 #### Custom field naming strategy
 It is possible to make your own field naming strategy. It is done by implementing the `FieldNamingStrategy` interface. It has one function `transform` which transforms the original field name.
+
+## License
+See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
+
+## Java version
+The library uses Java 11.
