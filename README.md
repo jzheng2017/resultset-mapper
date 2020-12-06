@@ -1,4 +1,4 @@
-[![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jzheng2017/resultset-mapper.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jzheng2017/resultset-mapper/context:java)
+[![Maven Central](https://img.shields.io/maven-central/v/nl.jiankai/resultset-mapper.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.jiankai%22%20AND%20a:%22resultset-mapper%22) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jzheng2017/resultset-mapper.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jzheng2017/resultset-mapper/context:java)
 # ResultSet Mapper
 ResultSet Mapper is a small lightweight library that allows you to map a `ResultSet` object to a desired java object by passing in its type.
 ## Example usages
@@ -43,9 +43,9 @@ List<User> users = new ArrayList();
 while (resultSet.next()){
     User user = new User();
     user.setId(resultSet.getInt("id");
-    user.setFirstName(resultSet.getString("first_name));
-    user.setLastName(resultSet.getString("last_name));
-    user.setEmail(resultSet.setString("email"));
+    user.setFirstName(resultSet.getString("first_name"));
+    user.setLastName(resultSet.getString("last_name"));
+    user.setEmail(resultSet.getString("email"));
     
     users.add(user);
 }
