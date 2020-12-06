@@ -1,9 +1,7 @@
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jzheng2017/resultset-mapper.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jzheng2017/resultset-mapper/context:java)
 # ResultSet Mapper
-ResultSet Mapper allows you to map a `ResultSet` to a desired java object by passing in its type.
-
+ResultSet Mapper is a small lightweight library that allows you to map a `ResultSet` object to a desired java object by passing in its type.
 ## Example usages
-
 ### Model object
 Define a java object you want to map to. Use the `@Column` annotation to override the `FieldNamingStrategy`
 ```java
@@ -24,7 +22,6 @@ ResultSetMapper r = ResultSetMapperFactory.getResultSetMapperIdentity();
 
 List<User> users = r.map(resultSet, User.class);
 ```
-
 ### Field naming strategies
 The library provides out of the box a few field naming strategies.
 #### IdentityFieldNamingStrategy
@@ -33,14 +30,11 @@ This strategy leaves the field names unchanged.
 This strategy maps the field names to lowercase underscore. For instance `firstName` would map to `first_name`.
 #### Custom field naming strategy
 It is possible to make your own field naming strategy. It is done by implementing the `FieldNamingStrategy` interface. It has one function `transform` which transforms the original field name. The concrete `FieldNamingStrategy` implementation can then be injected through the constructor.
-
 ```java
 ResultSetMapper r = new ResultSetMapper(new CustomFieldNamingStrategy());
 ```
-
 ## Why use this library?
 This library makes it easy to map to a `ResultSet` to your desired java model object. It can be done with only 1 line of code! It saves you a lot of duplicate code when mapping every query.
-
 ```java
 List<User> users = new ArrayList();
 
@@ -55,14 +49,20 @@ while (resultSet.next()){
 }
 ```
 vs
-
 ```java
 List<User> users = r.map(resultSet, User.class);
 ```
 Way more cleaner, right? Imagine doing the first example for every different query, that would be a lot of code.. The library also provides very extensive logging, making it very easy to spot errors when it occurs.
-
+## Installation
+### Maven
+```xml
+<dependency>
+  <groupId>nl.jiankai</groupId>
+  <artifactId>resultset-mapper</artifactId>
+  <version>1.0.0</version>
+</dependency>
+```
 ## License
 See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
-
 ## Java version
 The library uses Java 11.
