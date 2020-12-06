@@ -50,8 +50,8 @@ public class ResultSetMapper {
      * @param <T>              the desired class
      * @return list of the mapped objects
      */
-    public <T> List<T> map(ResultSet resultSet, Class<T> destinationClass) {
-        List<T> list = new ArrayList<>();
+    public <T> List<T> map(final ResultSet resultSet, final Class<T> destinationClass) {
+        final List<T> list = new ArrayList<>();
 
         try {
             if (resultSet == null || !resultSet.isBeforeFirst()) {
@@ -60,7 +60,7 @@ public class ResultSetMapper {
             }
 
             logger.info(String.format("Commencing mapping ResultSet to %s", destinationClass));
-            Map<String, Field> fields = getFields(destinationClass);
+            final Map<String, Field> fields = getFields(destinationClass);
 
 
             while (resultSet.next()) {
@@ -87,17 +87,17 @@ public class ResultSetMapper {
      */
     private <T> T createObject(ResultSet resultSet, Class<T> destinationClass, Map<String, Field> fields) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         logger.trace(String.format("Constructing new %s instance", destinationClass));
-        T dto = destinationClass.getConstructor().newInstance();
+        final T dto = destinationClass.getConstructor().newInstance();
 
         for (Map.Entry<String, Field> entry : fields.entrySet()) {
             final String key = entry.getKey();
 
             try {
                 logger.trace(String.format("Retrieving %s from the ResultSet", key));
-                Object value = resultSet.getObject(key);
+                final Object value = resultSet.getObject(key);
                 logger.debug(String.format("Retrieval of %s has resulted to: %s", key, value));
 
-                Field field = entry.getValue();
+                final Field field = entry.getValue();
 
                 logger.trace(String.format("Setting the value %s to the field %s", value, field.getName()));
                 field.set(dto, value);
@@ -138,7 +138,7 @@ public class ResultSetMapper {
         final String fieldName = field.getName();
 
         logger.trace(String.format("Retrieving @Column annotation for field: %s", fieldName));
-        Column columnAnnotation = field.getAnnotation(Column.class);
+        final Column columnAnnotation = field.getAnnotation(Column.class);
 
         logger.trace(String.format("Setting %s to accessibility to true", fieldName));
         field.setAccessible(true);
