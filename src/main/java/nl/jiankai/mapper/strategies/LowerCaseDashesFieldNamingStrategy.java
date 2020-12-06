@@ -7,4 +7,9 @@ public class LowerCaseDashesFieldNamingStrategy implements FieldNamingStrategy {
 
         return String.join("-", splitByCapital);
     }
+
+    @Override
+    public String toString() {
+        return "lowercase dashes";
+    }
 }
