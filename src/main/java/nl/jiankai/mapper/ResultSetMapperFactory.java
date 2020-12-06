@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ResultSetMapperFactory {
-    private final Logger logger = LoggerFactory.getLogger(ResultSetMapperFactory.class);
+    private static final Logger logger = LoggerFactory.getLogger(ResultSetMapperFactory.class);
 
     private ResultSetMapperFactory() {
         throw new AssertionError("The ResultSetMapperFactory should not be instantiated.");
@@ -27,6 +27,7 @@ public class ResultSetMapperFactory {
     }
 
     private static ResultSetMapper getResultSetMapper(FieldNamingStrategy fieldNamingStrategy) {
+        logger.trace("Constructing ResultSetMapper with the {} strategy.", fieldNamingStrategy);
         return new ResultSetMapper(fieldNamingStrategy);
     }
 }
