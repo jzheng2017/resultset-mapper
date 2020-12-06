@@ -6,7 +6,7 @@
 
     <groupId>nl.jiankai</groupId>
     <artifactId>resultset-mapper</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <name>ResultSet Mapper</name>
     <description>A library for mapping a ResultSet to your desired java object</description>
