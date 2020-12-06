@@ -75,6 +75,14 @@ public class ResultSetMapper {
         return list;
     }
 
+    /**
+     * Get the field naming strategy the mapper is using to map field names
+     * @return The field naming strategy to map field names
+     */
+    public FieldNamingStrategy getFieldNamingStrategy() {
+        return this.fieldNamingStrategy;
+    }
+
 
     /**
      * Create an instance of the destination class
