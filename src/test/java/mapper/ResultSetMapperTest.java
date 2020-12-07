@@ -83,6 +83,26 @@ public class ResultSetMapperTest {
         Assertions.assertEquals("birth-date", users.get(0).getBirthDate());
     }
 
+    @Test
+    void resultSetMapperMapsCorrectlyWhenOverriddenWithColumnAnnotation() {
+        populatedResultSetOverrideIdentity();
+        List<OverrideObject> overrides = sut.map(mockedResultSet, OverrideObject.class);
+
+        Assertions.assertEquals("overridden_name", overrides.get(0).getOverriddenName());
+    }
+
+    private void populatedResultSetOverrideIdentity() {
+        sut = new ResultSetMapper();
+        try {
+            when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+            when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+            when(mockedResultSet.getObject("overridden_name")).thenReturn("overridden_name");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
     private void populatedResultSetIdentity() {
         try {
             sut = new ResultSetMapper();
