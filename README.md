@@ -64,6 +64,10 @@ Way more cleaner, right? Imagine doing the first example for every different que
   <version>1.0.3</version>
 </dependency>
 ```
+### Gradle
+```gradle
+implementation 'nl.jiankai:resultset-mapper:1.0.3'
+```
 ## License
 See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
 ## Java version
