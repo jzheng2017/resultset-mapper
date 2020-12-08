@@ -66,7 +66,7 @@ Way more cleaner, right? Imagine doing the first example for every different que
 ```
 ### Gradle
 ```gradle
-implementation 'nl.jiankai:resultset-mapper:1.0.3'
+implementation 'nl.jiankai:resultset-mapper:1.0.4'
 ```
 ## License
 See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
