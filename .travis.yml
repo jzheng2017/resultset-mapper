@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - openjdk11
+  - openjdk15
 
 after_success:
   - mvn test jacoco:report coveralls:report
