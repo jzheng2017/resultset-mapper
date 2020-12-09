@@ -56,7 +56,9 @@ vs
 ```java
 List<User> users = r.map(resultSet, User.class);
 ```
-Way more cleaner, right? Imagine doing the first example for every different query, that would be a lot of code.. The library also provides very extensive logging, making it very easy to spot errors when it occurs.
+Way more cleaner, right? Imagine doing the first example for every different query, that would be a lot of code.. 
+
+The library also takes care of all the exception handling and provides very extensive logging, making it very easy to spot errors when it occurs.
 ## Installation
 ### Maven
 ```xml
