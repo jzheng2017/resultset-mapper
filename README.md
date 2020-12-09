@@ -23,7 +23,9 @@ ResultSetMapper r = ResultSetMapperFactory.getResultSetMapperIdentity();
 List<User> users = r.map(resultSet, User.class);
 ```
 ### Field naming strategies
-The library provides out of the box a few field naming strategies.
+The library provides out of the box a few field naming strategies. 
+
+**Note**: The provided strategies assumes you use `camelCase` for your field names. It does not work if you use other naming styles. If this does not conform to your naming style, you have to implement your own field naming strategy.
 #### IdentityFieldNamingStrategy
 This strategy leaves the field names unchanged.
 #### LowerCaseUnderscoreFieldNamingStrategy
