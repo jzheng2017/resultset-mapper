@@ -18,9 +18,21 @@ public class User {
 ### Map `ResultSet` to desired model object 
 To map a `ResultSet` you need an instance of `ResultSetMapper`. The library provides a factory class `ResultSetMapperFactory` that serves `ResultSetMapper` with different `FieldNamingStrategy`. The `ResultSetMapper` defaults to the `IdentityFieldNamingStrategy`.
 ```java
-ResultSetMapper r = ResultSetMapperFactory.getResultSetMapperIdentity();
-
+// ResultSetMapper with IdentityFieldNamingStrategy
+ResultSetMapper r = ResultSetMapperFactory.getResultSetMapperIdentity(); 
 List<User> users = r.map(resultSet, User.class);
+```
+
+```java
+// more examples of out of the box factory calls for different field naming strategies
+
+// ResultSetMapper with LowerCaseUnderscoreFieldNamingStrategy
+ResultSetMapper r2 = ResultSetMapperFactory.getResultSetMapperLowerCaseUnderscore(); 
+List<User> users = r2.map(resultSet, User.class);
+
+// ResultSetMapper with LowerCaseDashesFieldNamingStrategy
+ResultSetMapper r3 = ResultSetMapperFactory.getResultSetMapperLowerCaseDashes(); 
+List<User> users = r3.map(resultSet, User.class);
 ```
 ### Field naming strategies
 The library provides out of the box a few field naming strategies. 
@@ -75,4 +87,4 @@ implementation 'nl.jiankai:resultset-mapper:1.0.4'
 ## License
 See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
 ## Java version
-The library uses Java 11.
+The library uses Java 15.
