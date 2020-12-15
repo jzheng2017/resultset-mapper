@@ -1,6 +1,7 @@
 package mapper;
 
 import nl.jiankai.mapper.ResultSetMapper;
+import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.LowerCaseDashesFieldNamingStrategy;
 import nl.jiankai.mapper.strategies.LowerCaseUnderscoreFieldNamingStrategy;
 import org.junit.jupiter.api.Assertions;
@@ -89,6 +90,13 @@ public class ResultSetMapperTest {
         List<OverrideObject> overrides = sut.map(mockedResultSet, OverrideObject.class);
 
         Assertions.assertEquals("overridden_name", overrides.get(0).getOverriddenName());
+    }
+
+    @Test
+    void resultSetMapperHandlesExceptionsCorrectly() throws SQLException {
+        when(mockedResultSet.isBeforeFirst()).thenThrow(SQLException.class);
+
+        Assertions.assertThrows(MappingFailedException.class, () -> sut.map(mockedResultSet, OverrideObject.class));
     }
 
     private void populatedResultSetOverrideIdentity() {
