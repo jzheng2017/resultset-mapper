@@ -1,6 +1,7 @@
 package nl.jiankai.mapper;
 
 import nl.jiankai.annotations.Column;
+import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.FieldNamingStrategy;
 import nl.jiankai.mapper.strategies.IdentityFieldNamingStrategy;
 import org.slf4j.Logger;
@@ -62,13 +63,13 @@ public class ResultSetMapper {
             logger.info("Commencing mapping ResultSet to {}", destinationClass);
             final Map<String, Field> fields = getFields(destinationClass);
 
-
             while (resultSet.next()) {
                 logger.trace("Adding new {} to the list", destinationClass);
                 list.add(createObject(resultSet, destinationClass, fields));
             }
         } catch (SQLException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException ex) {
-            logger.error("Something has gone wrong! Exception: " + ex.getMessage());
+            logger.error("Something has gone wrong while mapping! Exception: " + ex.getMessage());
+            throw new MappingFailedException(ex.getMessage());
         }
 
         logger.info("ResultSet has been successfully mapped to {}", destinationClass);
@@ -77,6 +78,7 @@ public class ResultSetMapper {
 
     /**
      * Get the field naming strategy the mapper is using to map field names
+     *
      * @return The field naming strategy to map field names
      */
     public FieldNamingStrategy getFieldNamingStrategy() {
@@ -101,13 +103,13 @@ public class ResultSetMapper {
             final String key = entry.getKey();
 
             try {
-                logger.trace("Retrieving {} from the ResultSet", key);
+                logger.trace("Retrieving '{}' from the ResultSet", key);
                 final Object value = resultSet.getObject(key);
-                logger.debug("Retrieval of {} has resulted to: {}", key, value);
+                logger.debug("Retrieval of '{}' has resulted to: {}", key, value);
 
                 final Field field = entry.getValue();
 
-                logger.trace("Setting the value {} to the field {}", value, field.getName());
+                logger.trace("Setting the value '{}' to the field: {}", value, field.getName());
                 field.set(dto, value);
             } catch (SQLException ex) {
                 logger.warn(ex.getMessage());
@@ -145,23 +147,23 @@ public class ResultSetMapper {
     private void mapFieldName(Map<String, Field> mappedFields, Field field) {
         final String fieldName = field.getName();
 
-        logger.trace("Retrieving @Column annotation for field: {}", fieldName);
+        logger.trace("Retrieving @Column annotation for field '{}'", fieldName);
         final Column columnAnnotation = field.getAnnotation(Column.class);
 
-        logger.trace("Setting {} to accessibility to true", fieldName);
+        logger.trace("Setting '{}' accessibility to true", fieldName);
         field.setAccessible(true);
 
         if (columnAnnotation != null) {
             final String columnName = columnAnnotation.name();
 
-            logger.trace("@Column annotation found for {}", fieldName);
-            logger.trace("The field name strategy will be overruled. Mapping {} to {}", fieldName, columnName);
+            logger.trace("@Column annotation found for '{}'", fieldName);
+            logger.trace("The field name strategy will be overruled. Mapping '{}' to '{}'", fieldName, columnName);
             mappedFields.put(columnName, field);
         } else {
             final String transformedName = fieldNamingStrategy.transform(fieldName);
 
-            logger.trace("No @Column annotation found for {}", fieldName);
-            logger.trace("Mapping {} to {}", fieldName, transformedName);
+            logger.trace("No @Column annotation found for '{}'", fieldName);
+            logger.trace("Mapping '{}' to '{}'", fieldName, transformedName);
             mappedFields.put(transformedName, field);
         }
     }
