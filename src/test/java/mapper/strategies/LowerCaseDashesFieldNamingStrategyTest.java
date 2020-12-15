@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LowerCaseDashesFieldNamingStrategyTest {
-    private LowerCaseDashesFieldNamingStrategy sut;
     private final String toBeTransformedString = "unitTestingFieldNamingStrategyTest";
+    private LowerCaseDashesFieldNamingStrategy sut;
 
     @BeforeEach
     void setup() {

@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class IdentityFieldNamingStrategyTest {
-    private IdentityFieldNamingStrategy sut;
     private final String toBeTransformedString = "unitTestingIdentityFieldNamingStrategyTest";
+    private IdentityFieldNamingStrategy sut;
 
     @BeforeEach
     void setup() {

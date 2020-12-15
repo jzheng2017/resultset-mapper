@@ -6,8 +6,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class LowerCaseUnderscoreFieldNamingStrategyTest {
-    private LowerCaseUnderscoreFieldNamingStrategy sut;
     private final String toBeTransformedString = "unitTestingFieldNamingStrategyTest";
+    private LowerCaseUnderscoreFieldNamingStrategy sut;
 
     @BeforeEach
     void setup() {
