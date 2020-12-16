@@ -6,7 +6,7 @@
 
     <groupId>nl.jiankai</groupId>
     <artifactId>resultset-mapper</artifactId>
-    <version>1.0.5</version>
+    <version>1.1.0</version>
 
     <name>ResultSet Mapper</name>
     <description>A library for mapping a ResultSet to your desired java object</description>
@@ -51,7 +51,6 @@
     </distributionManagement>
 
     <dependencies>
-
         <!-- junit 5 -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
