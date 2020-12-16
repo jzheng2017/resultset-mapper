@@ -49,6 +49,46 @@ It is possible to make your own field naming strategy. It is done by implementin
 ```java
 ResultSetMapper r = new ResultSetMapper(new CustomFieldNamingStrategy());
 ```
+
+## Logging
+The library has very extensive logging at every logging level. From `TRACE` to `INFO`, the logging level is default set on `INFO`. 
+This means only logging messages with log level of `INFO` and above will be logged. 
+
+It is possible to suppress warnings for particular classes. 
+For instance the mapper will throw warning messages when a field can not be found in the `ResultSet`. 
+It would be annoying to be spammed with warning message for every object that is to be mapped. 
+The library provides the `@SuppressWarnings` annotations to "suppress" these warning messages.
+
+### Class level `@SuppressWarnings`
+```java
+@SuppressWarnings
+public class User {
+    private int id;
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
+    private String lastName;
+    private String email;
+}
+```
+This will suppress all warnings for every field in the annotated class.
+
+### Field level `@SuppressWarnings`
+```java
+
+public class User {
+    private int id;
+    @SuppressWarnings
+    @Column(name = "first_name")
+    private String firstName;
+    @SuppressWarnings
+    @Column(name = "last_name")
+    private String lastName;
+    private String email;
+}
+```
+It is also possible to suppress warnings at field level. The warnings will be suppressed for that particular annotated field.
+
 ## Why use this library?
 This library makes it easy to map to a `ResultSet` to your desired java model object. It can be done with only 1 line of code! It saves you a lot of duplicate code when mapping every query.
 ```java
@@ -77,12 +117,12 @@ The library also takes care of all the exception handling and provides very exte
 <dependency>
   <groupId>nl.jiankai</groupId>
   <artifactId>resultset-mapper</artifactId>
-  <version>1.0.5</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 ### Gradle
 ```gradle
-implementation 'nl.jiankai:resultset-mapper:1.0.5'
+implementation 'nl.jiankai:resultset-mapper:1.1.0'
 ```
 ## License
 See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
