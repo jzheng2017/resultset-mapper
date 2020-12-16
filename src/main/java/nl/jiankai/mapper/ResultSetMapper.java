@@ -1,6 +1,7 @@
 package nl.jiankai.mapper;
 
 import nl.jiankai.annotations.Column;
+import nl.jiankai.annotations.SuppressWarnings;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.FieldNamingStrategy;
 import nl.jiankai.mapper.strategies.IdentityFieldNamingStrategy;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class ResultSetMapper {
     private final Logger logger = LoggerFactory.getLogger(ResultSetMapper.class);
     private final FieldNamingStrategy fieldNamingStrategy;
+    private boolean hasClassLevelWarningSuppression;
 
     /**
      * Builds a ResultSetMapper with default IdentityFieldNamingStrategy
@@ -53,6 +55,7 @@ public class ResultSetMapper {
      */
     public <T> List<T> map(final ResultSet resultSet, final Class<T> destinationClass) {
         final List<T> list = new ArrayList<>();
+        this.hasClassLevelWarningSuppression = destinationClass.isAnnotationPresent(SuppressWarnings.class);
 
         try {
             if (resultSet == null || !resultSet.isBeforeFirst()) {
@@ -85,7 +88,6 @@ public class ResultSetMapper {
         return this.fieldNamingStrategy;
     }
 
-
     /**
      * Create an instance of the destination class
      *
@@ -101,18 +103,21 @@ public class ResultSetMapper {
 
         for (Map.Entry<String, Field> entry : fields.entrySet()) {
             final String key = entry.getKey();
+            final Field field = entry.getValue();
 
             try {
                 logger.trace("Retrieving '{}' from the ResultSet", key);
                 final Object value = resultSet.getObject(key);
                 logger.debug("Retrieval of '{}' has resulted to: {}", key, value);
 
-                final Field field = entry.getValue();
-
                 logger.trace("Setting the value '{}' to the field: {}", value, field.getName());
                 field.set(dto, value);
             } catch (SQLException ex) {
-                logger.warn(ex.getMessage());
+                final boolean fieldWarningsNotSuppressed = !(hasClassLevelWarningSuppression || field.isAnnotationPresent(SuppressWarnings.class));
+
+                if (fieldWarningsNotSuppressed) {
+                    logger.warn(ex.getMessage());
+                }
             }
         }
 
