@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/nl.jiankai/resultset-mapper.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.jiankai%22%20AND%20a:%22resultset-mapper%22) [![Build Status](https://travis-ci.com/jzheng2017/resultset-mapper.svg?branch=main)](https://travis-ci.com/jzheng2017/resultset-mapper) [![Coverage Status](https://coveralls.io/repos/github/jzheng2017/resultset-mapper/badge.svg?branch=main)](https://coveralls.io/github/jzheng2017/resultset-mapper?branch=main) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jzheng2017/resultset-mapper.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jzheng2017/resultset-mapper/context:java)
+[![Maven Central](https://img.shields.io/maven-central/v/nl.jiankai/resultset-mapper.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22nl.jiankai%22%20AND%20a:%22resultset-mapper%22) [![Build Status](https://travis-ci.com/jzheng2017/resultset-mapper.svg?branch=main)](https://travis-ci.com/jzheng2017/resultset-mapper) [![Coverage Status](https://coveralls.io/repos/github/jzheng2017/resultset-mapper/badge.svg?branch=main)](https://coveralls.io/github/jzheng2017/resultset-mapper?branch=main) [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/jzheng2017/resultset-mapper.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/jzheng2017/resultset-mapper/context:java) [![Maintainability](https://api.codeclimate.com/v1/badges/2c2148df6c782aa9fe11/maintainability)](https://codeclimate.com/github/jzheng2017/resultset-mapper/maintainability)
 # ResultSet Mapper
 ResultSet Mapper is a small lightweight library that allows you to map a `ResultSet` object to a desired java object by passing in its type.
 ## Example usages
@@ -51,7 +51,7 @@ ResultSetMapper r = new ResultSetMapper(new CustomFieldNamingStrategy());
 ```
 
 ## Logging
-The library has very extensive logging at every logging level. From `TRACE` to `INFO`, the logging level is default set on `INFO`. 
+The library has very extensive logging at every logging level. From `TRACE` to `ERROR`, the logging level is default set on `INFO`. 
 This means only logging messages with log level of `INFO` and above will be logged. 
 
 It is possible to suppress warnings for particular classes. 

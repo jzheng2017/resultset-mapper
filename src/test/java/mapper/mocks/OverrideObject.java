@@ -1,4 +1,4 @@
-package mapper;
+package mapper.mocks;
 
 import nl.jiankai.annotations.Column;
 
