@@ -46,6 +46,15 @@ public class ResultSetMapper {
     }
 
     /**
+     * Get the field naming strategy the mapper is using to map field names
+     *
+     * @return The field naming strategy to map field names
+     */
+    public FieldNamingStrategy getFieldNamingStrategy() {
+        return this.fieldNamingStrategy;
+    }
+
+    /**
      * Maps the ResultSet to the desired class
      *
      * @param resultSet        the ResultSet returned by JDBC API
@@ -77,51 +86,6 @@ public class ResultSetMapper {
 
         logger.info("ResultSet has been successfully mapped to {}", destinationClass);
         return list;
-    }
-
-    /**
-     * Get the field naming strategy the mapper is using to map field names
-     *
-     * @return The field naming strategy to map field names
-     */
-    public FieldNamingStrategy getFieldNamingStrategy() {
-        return this.fieldNamingStrategy;
-    }
-
-    /**
-     * Create an instance of the destination class
-     *
-     * @param resultSet        the ResultSet returned by JDBC API
-     * @param destinationClass the class to map to
-     * @param fields           the mapped fields
-     * @param <T>              the desired class
-     * @return an instance of the destination class
-     */
-    private <T> T createObject(ResultSet resultSet, Class<T> destinationClass, Map<String, Field> fields) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        logger.trace("Constructing new {} instance", destinationClass);
-        final T dto = destinationClass.getConstructor().newInstance();
-
-        for (Map.Entry<String, Field> entry : fields.entrySet()) {
-            final String key = entry.getKey();
-            final Field field = entry.getValue();
-
-            try {
-                logger.trace("Retrieving '{}' from the ResultSet", key);
-                final Object value = resultSet.getObject(key);
-                logger.debug("Retrieval of '{}' has resulted to: {}", key, value);
-
-                logger.trace("Setting the value '{}' to the field: {}", value, field.getName());
-                field.set(dto, value);
-            } catch (SQLException ex) {
-                final boolean fieldWarningsNotSuppressed = !(hasClassLevelWarningSuppression || field.isAnnotationPresent(SuppressWarnings.class));
-
-                if (fieldWarningsNotSuppressed) {
-                    logger.warn(ex.getMessage());
-                }
-            }
-        }
-
-        return dto;
     }
 
     /**
@@ -171,5 +135,41 @@ public class ResultSetMapper {
             logger.trace("Mapping '{}' to '{}'", fieldName, transformedName);
             mappedFields.put(transformedName, field);
         }
+    }
+
+    /**
+     * Create an instance of the destination class
+     *
+     * @param resultSet        the ResultSet returned by JDBC API
+     * @param destinationClass the class to map to
+     * @param fields           the mapped fields
+     * @param <T>              the desired class
+     * @return an instance of the destination class
+     */
+    private <T> T createObject(ResultSet resultSet, Class<T> destinationClass, Map<String, Field> fields) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        logger.trace("Constructing new {} instance", destinationClass);
+        final T dto = destinationClass.getConstructor().newInstance();
+
+        for (Map.Entry<String, Field> entry : fields.entrySet()) {
+            final String key = entry.getKey();
+            final Field field = entry.getValue();
+
+            try {
+                logger.trace("Retrieving '{}' from the ResultSet", key);
+                final Object value = resultSet.getObject(key);
+                logger.debug("Retrieval of '{}' has resulted to: {}", key, value);
+
+                logger.trace("Setting the value '{}' to the field: {}", value, field.getName());
+                field.set(dto, value);
+            } catch (SQLException ex) {
+                final boolean fieldWarningsNotSuppressed = !(hasClassLevelWarningSuppression || field.isAnnotationPresent(SuppressWarnings.class));
+
+                if (fieldWarningsNotSuppressed) {
+                    logger.warn(ex.getMessage());
+                }
+            }
+        }
+
+        return dto;
     }
 }
