@@ -1,5 +1,9 @@
 package mapper;
 
+import mapper.mocks.OverrideObject;
+import mapper.mocks.SuppressOnClassLevel;
+import mapper.mocks.SuppressOnFieldLevel;
+import mapper.mocks.User;
 import nl.jiankai.mapper.ResultSetMapper;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.LowerCaseDashesFieldNamingStrategy;
@@ -14,12 +18,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ResultSetMapperTest {
     private ResultSetMapper sut;
     @Mock
     private ResultSet mockedResultSet;
+    @Mock
+    private SQLException mockedException;
 
     @BeforeEach
     void setup() {
@@ -97,6 +103,28 @@ public class ResultSetMapperTest {
         when(mockedResultSet.isBeforeFirst()).thenThrow(SQLException.class);
 
         Assertions.assertThrows(MappingFailedException.class, () -> sut.map(mockedResultSet, OverrideObject.class));
+    }
+
+    @Test
+    void suppressWarningsAnnotationOnClassLevelStopsLoggingForAllFields() throws SQLException {
+        when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+        when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+        when(mockedResultSet.getObject("test")).thenThrow(mockedException);
+        when(mockedResultSet.getObject("test2")).thenThrow(mockedException);
+
+        sut.map(mockedResultSet, SuppressOnClassLevel.class);
+        verify(mockedException, times(0)).getMessage();
+    }
+
+    @Test
+    void suppressWarningsAnnotationOnFieldLevelStopsLoggingForAnnotatedFields() throws SQLException {
+        when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+        when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+        when(mockedResultSet.getObject("test")).thenThrow(mockedException);
+        when(mockedResultSet.getObject("test2")).thenThrow(mockedException);
+
+        sut.map(mockedResultSet, SuppressOnFieldLevel.class);
+        verify(mockedException).getMessage();
     }
 
     private void populatedResultSetOverrideIdentity() {
