@@ -70,6 +70,25 @@ It is possible to make your own field naming strategy. It is done by implementin
 ResultSetMapper r = new ResultSetMapper(new CustomFieldNamingStrategy());
 ```
 
+## Ignoring fields
+The library allows you to annotate class fields with `@Ignore`. This annotation can be used on a field to let the `ResultSetMapper`know that it can skip this field when mapping. This means that the `ResultSetMapper` will not try to retrieve the value from the `ResultSet` for the annotated field.
+
+### Why would I ignore a field?
+Let me show you an example.
+```java
+public class User {
+    private int id;
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
+    private String lastName;
+    private String email;
+    @Ignore
+    private List<UserPermission> userPermissions;
+}
+```
+As you can see above the `User` class has an additional `List<UserPermission` object. To retrieve that it requires an additional query and can not be mapped when mapping the initial `ResultSet`. By using the `@Ignore` annotation it can let the mapper know that it does not have to be mapped when trying to map the `User` class.
+
 ## Logging
 The library has very extensive logging at every logging level. From `TRACE` to `ERROR`, the logging level is default set on `INFO`. 
 This means only logging messages with log level of `INFO` and above will be logged. 
