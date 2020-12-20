@@ -1,9 +1,6 @@
 package mapper;
 
-import mapper.mocks.OverrideObject;
-import mapper.mocks.SuppressOnClassLevel;
-import mapper.mocks.SuppressOnFieldLevel;
-import mapper.mocks.User;
+import mapper.mocks.*;
 import nl.jiankai.mapper.ResultSetMapper;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.LowerCaseDashesFieldNamingStrategy;
@@ -99,6 +96,15 @@ public class ResultSetMapperTest {
     }
 
     @Test
+    void resultSetMapperMapsCorrectlyWhenUsingIgnoreAnnotation() {
+        populatedResultSetIgnoreIdentity();
+        List<IgnoreObject> overrides = sut.map(mockedResultSet, IgnoreObject.class);
+
+        Assertions.assertNull(overrides.get(0).ignored);
+        Assertions.assertNotNull(overrides.get(0).notIgnored);
+    }
+
+    @Test
     void resultSetMapperHandlesExceptionsCorrectly() throws SQLException {
         when(mockedResultSet.isBeforeFirst()).thenThrow(SQLException.class);
 
@@ -133,6 +139,18 @@ public class ResultSetMapperTest {
             when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
             when(mockedResultSet.isBeforeFirst()).thenReturn(true);
             when(mockedResultSet.getObject("overridden_name")).thenReturn("overridden_name");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
+    private void populatedResultSetIgnoreIdentity() {
+        sut = new ResultSetMapper();
+        try {
+            when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+            when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+            when(mockedResultSet.getObject("notIgnored")).thenReturn("notIgnored");
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

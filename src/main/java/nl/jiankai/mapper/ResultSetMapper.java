@@ -1,6 +1,7 @@
 package nl.jiankai.mapper;
 
 import nl.jiankai.annotations.Column;
+import nl.jiankai.annotations.Ignore;
 import nl.jiankai.annotations.SuppressWarnings;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.FieldNamingStrategy;
@@ -101,7 +102,9 @@ public class ResultSetMapper {
         final Field[] declaredFields = destinationClass.getDeclaredFields();
 
         for (Field field : declaredFields) {
-            mapFieldName(mappedFields, field);
+            if (!field.isAnnotationPresent(Ignore.class)) {
+                mapFieldName(mappedFields, field);
+            }
         }
 
         return mappedFields;
