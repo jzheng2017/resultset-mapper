@@ -2,7 +2,6 @@
 # ResultSet Mapper
 ResultSet Mapper is a small lightweight library that allows you to map a `ResultSet` object to a desired java object by passing in its type.
 
-## Table of Contents
 - [Example usages](#example-usages)
   * [Model object](#model-object)
   * [Map `ResultSet` to desired model object](#map-resultset-to-desired-model-object)
@@ -11,6 +10,8 @@ ResultSet Mapper is a small lightweight library that allows you to map a `Result
     + [LowerCaseUnderscoreFieldNamingStrategy](#lowercaseunderscorefieldnamingstrategy)
     + [LowerCaseDashesFieldNamingStrategy](#lowercasedashesfieldnamingstrategy)
     + [Custom field naming strategy](#custom-field-naming-strategy)
+- [Ignoring fields](#ignoring-fields)
+  * [Why would I ignore a field?](#why-would-i-ignore-a-field)
 - [Logging](#logging)
   * [Class level @SuppressWarnings](#class-level-suppresswarnings)
   * [Field level @SuppressWarnings](#field-level-suppresswarnings)
@@ -87,7 +88,7 @@ public class User {
     private List<UserPermission> userPermissions;
 }
 ```
-As you can see above the `User` class has an additional `List<UserPermission` object. To retrieve that it requires an additional query and can not be mapped when mapping the initial `ResultSet`. By using the `@Ignore` annotation it can let the mapper know that it does not have to be mapped when trying to map the `User` class.
+As you can see above the `User` class has an additional `List<UserPermission>` object. To retrieve that it requires an additional query and can not be mapped when mapping the initial `ResultSet`. By using the `@Ignore` annotation it can let the mapper know that it does not have to be mapped when trying to map the `User` class.
 
 ## Logging
 The library has very extensive logging at every logging level. From `TRACE` to `ERROR`, the logging level is default set on `INFO`. 
