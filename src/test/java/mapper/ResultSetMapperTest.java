@@ -133,6 +133,39 @@ public class ResultSetMapperTest {
         verify(mockedException).getMessage();
     }
 
+    @Test
+    void resultSetMapperReturnsCorrectMappedObjectWhenHasBaseClassAttributes() {
+        populatedResultSetBaseChildClassIdentity();
+
+        List<Child> children = sut.map(mockedResultSet, Child.class);
+
+        Assertions.assertEquals(10, children.get(0).getBaseAttribute());
+        Assertions.assertEquals("overridden_name", children.get(0).getOverriddenBaseAttribute());
+        Assertions.assertEquals("childAttribute", children.get(0).getChildAttribute());
+    }
+
+    @Test
+    void resultSetMapperCorrectlyRegistersAnnotationsFromBaseClass() {
+        populatedResultSetBaseChildClassIdentity();
+
+        List<Child> children = sut.map(mockedResultSet, Child.class);
+        Assertions.assertEquals("overridden_name", children.get(0).getOverriddenBaseAttribute());
+    }
+
+    private void populatedResultSetBaseChildClassIdentity() {
+        sut = new ResultSetMapper();
+        try {
+            when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+            when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+            when(mockedResultSet.getObject("baseAttribute")).thenReturn(10);
+            when(mockedResultSet.getObject("childAttribute")).thenReturn("childAttribute");
+            when(mockedResultSet.getObject("overridden_name")).thenReturn("overridden_name");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+    }
+
     private void populatedResultSetOverrideIdentity() {
         sut = new ResultSetMapper();
         try {
