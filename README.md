@@ -157,12 +157,12 @@ The library also takes care of all the exception handling and provides very exte
 <dependency>
   <groupId>nl.jiankai</groupId>
   <artifactId>resultset-mapper</artifactId>
-  <version>1.3.0</version>
+  <version>1.4.0</version>
 </dependency>
 ```
 ### Gradle
 ```gradle
-implementation 'nl.jiankai:resultset-mapper:1.3.0'
+implementation 'nl.jiankai:resultset-mapper:1.4.0'
 ```
 ## License
 See the [LICENSE](https://github.com/jzheng2017/resultset-mapper/blob/main/LICENSE) file for the license rights and limitations (MIT).
