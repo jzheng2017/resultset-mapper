@@ -13,10 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class allows the user to map a ResultSet to their desired model object
@@ -99,7 +96,7 @@ public class ResultSetMapper {
     private <T> Map<String, Field> getFields(final Class<T> destinationClass) {
         final Map<String, Field> mappedFields = new HashMap<>();
         logger.trace("Retrieving all declared fields for class: {}", destinationClass);
-        final Field[] declaredFields = destinationClass.getDeclaredFields();
+        final List<Field> declaredFields = getFields(new ArrayList<>(), destinationClass);
 
         for (Field field : declaredFields) {
             if (!field.isAnnotationPresent(Ignore.class)) {
@@ -108,6 +105,26 @@ public class ResultSetMapper {
         }
 
         return mappedFields;
+    }
+
+    /**
+     * Get all public, protected and private fields recursively (including fields from the super classes)
+     *
+     * @param fields a list of fields
+     * @param type   the destination class
+     * @return list of all fields of the passed in class
+     * @since 1.4.0
+     */
+    private List<Field> getFields(List<Field> fields, Class<?> type) {
+        logger.trace("Adding all declared fields from class {}", type);
+        fields.addAll(Arrays.asList(type.getDeclaredFields()));
+
+        if (type.getSuperclass() != null) {
+            logger.trace("Retrieving declared fields from class {}", type);
+            getFields(fields, type.getSuperclass());
+        }
+
+        return fields;
     }
 
     /**
