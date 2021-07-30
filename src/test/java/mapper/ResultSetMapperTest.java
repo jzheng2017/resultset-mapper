@@ -1,7 +1,9 @@
 package mapper;
 
 import mapper.mocks.*;
+import nl.jiankai.annotations.Converter;
 import nl.jiankai.mapper.ResultSetMapper;
+import nl.jiankai.mapper.converters.AttributeConverter;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.LowerCaseDashesFieldNamingStrategy;
 import nl.jiankai.mapper.strategies.LowerCaseUnderscoreFieldNamingStrategy;
@@ -11,8 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -142,6 +146,7 @@ public class ResultSetMapperTest {
         Assertions.assertEquals(10, children.get(0).getBaseAttribute());
         Assertions.assertEquals("overridden_name", children.get(0).getOverriddenBaseAttribute());
         Assertions.assertEquals("childAttribute", children.get(0).getChildAttribute());
+
     }
 
     @Test
@@ -152,6 +157,28 @@ public class ResultSetMapperTest {
         Assertions.assertEquals("overridden_name", children.get(0).getOverriddenBaseAttribute());
     }
 
+    @Test
+    void resultSetMapperCorrectlyAndAutomaticallyConvertsValueOfDifferentType() {
+        populatedResultSetPersonClassIdentity();
+
+        List<Person> persons = sut.map(mockedResultSet, Person.class);
+
+        Assertions.assertNotNull(persons.get(0).getChildRegistered());
+        Assertions.assertNotNull(persons.get(0).getDateOfBirth());
+        Assertions.assertNotNull(persons.get(0).getTimeOfBirth());
+    }
+
+    @Test
+    void resultSetMapperCorrectlyHandlesConvertAnnotation(){
+        populatedResultSetPersonConvertAnnotationsClassIdentity();
+
+        List<PersonConvertAnnotations> persons = sut.map(mockedResultSet, PersonConvertAnnotations.class);
+
+        Assertions.assertNotNull(persons.get(0).getChildRegistered());
+        Assertions.assertNotNull(persons.get(0).getDateOfBirth());
+        Assertions.assertNotNull(persons.get(0).getTimeOfBirth());
+    }
+
     private void populatedResultSetBaseChildClassIdentity() {
         sut = new ResultSetMapper();
         try {
@@ -160,10 +187,38 @@ public class ResultSetMapperTest {
             when(mockedResultSet.getObject("baseAttribute")).thenReturn(10);
             when(mockedResultSet.getObject("childAttribute")).thenReturn("childAttribute");
             when(mockedResultSet.getObject("overridden_name")).thenReturn("overridden_name");
+            when(mockedResultSet.getObject("overridden_name")).thenReturn("overridden_name");
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
+    }
+
+    private void populatedResultSetPersonClassIdentity() {
+        sut = new ResultSetMapper();
+        try {
+            when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+            when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+            when(mockedResultSet.getObject("dateOfBirth")).thenReturn(Date.valueOf(LocalDate.now()));
+            when(mockedResultSet.getObject("timeOfBirth")).thenReturn(Time.valueOf(LocalTime.now()));
+            when(mockedResultSet.getObject("childRegistered")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void populatedResultSetPersonConvertAnnotationsClassIdentity() {
+        sut = new ResultSetMapper();
+        sut.registerAttributeConverter(new LocalDateTimeToLocalDateConverter());
+        try {
+            when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+            when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+            when(mockedResultSet.getObject("dateOfBirth")).thenReturn(LocalDateTime.now());
+            when(mockedResultSet.getObject("timeOfBirth")).thenReturn(Time.valueOf(LocalTime.now()));
+            when(mockedResultSet.getObject("childRegistered")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void populatedResultSetOverrideIdentity() {
@@ -232,6 +287,25 @@ public class ResultSetMapperTest {
             when(mockedResultSet.getObject("birth-date")).thenReturn("birth-date");
         } catch (SQLException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    @Converter
+    public class LocalDateTimeToLocalDateConverter implements AttributeConverter<LocalDateTime, LocalDate> {
+
+        @Override
+        public LocalDate convert(LocalDateTime value) {
+            return value.toLocalDate();
+        }
+
+        @Override
+        public Class<LocalDateTime> source() {
+            return LocalDateTime.class;
+        }
+
+        @Override
+        public Class<LocalDate> target() {
+            return LocalDate.class;
         }
     }
 }
