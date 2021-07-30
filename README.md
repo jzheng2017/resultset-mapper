@@ -3,22 +3,26 @@
 ResultSet Mapper is a small lightweight library that allows you to map a `ResultSet` object to a desired java object by passing in its type.
 
 - [Example usages](#example-usages)
-  * [Model object](#model-object)
-  * [Map `ResultSet` to desired model object](#map-resultset-to-desired-model-object)
-  * [Field naming strategies](#field-naming-strategies)
-    + [IdentityFieldNamingStrategy](#identityfieldnamingstrategy)
-    + [LowerCaseUnderscoreFieldNamingStrategy](#lowercaseunderscorefieldnamingstrategy)
-    + [LowerCaseDashesFieldNamingStrategy](#lowercasedashesfieldnamingstrategy)
-    + [Custom field naming strategy](#custom-field-naming-strategy)
-- [Ignoring fields](#ignoring-fields)
-  * [Why would I ignore a field?](#why-would-i-ignore-a-field)
-- [Logging](#logging)
-  * [Class level @SuppressWarnings](#class-level-suppresswarnings)
-  * [Field level @SuppressWarnings](#field-level-suppresswarnings)
-- [Why use this library?](#why-use-this-library)
+    * [Model object](#model-object)
+    * [Map `ResultSet` to desired model object](#map--resultset--to-desired-model-object)
+    * [Field naming strategies](#field-naming-strategies)
+        + [IdentityFieldNamingStrategy](#identityfieldnamingstrategy)
+        + [LowerCaseUnderscoreFieldNamingStrategy](#lowercaseunderscorefieldnamingstrategy)
+        + [LowerCaseDashesFieldNamingStrategy](#lowercasedashesfieldnamingstrategy)
+        + [Custom field naming strategy](#custom-field-naming-strategy)
+    * [Attribute converting](#attribute-converting)
+        + [`@Convert` annotation](#--convert--annotation)
+        + [Attribute converter](#attribute-converter)
+        + [Available attribute converters](#available-attribute-converters)
+    * [Ignoring fields](#ignoring-fields)
+        + [Why would I ignore a field?](#why-would-i-ignore-a-field-)
+    * [Logging](#logging)
+        + [Class level `@SuppressWarnings`](#class-level---suppresswarnings-)
+        + [Field level `@SuppressWarnings`](#field-level---suppresswarnings-)
+- [Why use this library?](#why-use-this-library-)
 - [Installation](#installation)
-  * [Maven](#maven)
-  * [Gradle](#gradle)
+    * [Maven](#maven)
+    * [Gradle](#gradle)
 - [License](#license)
 - [Java version](#java-version)
 
@@ -71,10 +75,73 @@ It is possible to make your own field naming strategy. It is done by implementin
 ResultSetMapper r = new ResultSetMapper(new CustomFieldNamingStrategy());
 ```
 
-## Ignoring fields
+### Attribute converting
+The library provides the ability to convert one type to another, allowing two incompatible types to work during mapping.
+
+#### `@Convert` annotation
+Using the `@Convert` annotation you can define on class field level which attribute converter must be used.
+
+**Note**: If there is no `@Convert` annotation is present, the mapper will search for an appropriate attribute converter. If it has found one it will apply *only* if there is a `@Converter` annotation applied on the attribute converter with `autoApply` equaling `true`.
+```java
+public class User {
+    private int id;
+    @Column(name = "first_name")
+    private String firstName;
+    @Column(name = "last_name")
+    private String lastName;
+    private String email;
+    @Convert(converter = TimestampToLocalDateTimeConverter.class)
+    private LocalDateTime creationDateTime;
+}
+```
+
+#### Attribute converter
+Let's see how an attribute converter can be defined. As you can see below an attribute converter can be defined by implementing the `AttributeConverter<S, T>` interface.
+```java
+@Converter(autoApply = true)
+public class TimestampToLocalDateTimeConverter implements AttributeConverter<Timestamp, LocalDateTime> {
+
+    @Override
+    public LocalDateTime convert(Timestamp value) {
+        return value.toLocalDateTime();
+    }
+
+    @Override
+    public Class<Timestamp> source() {
+        return Timestamp.class;
+    }
+
+    @Override
+    public Class<LocalDateTime> target() {
+        return LocalDateTime.class;
+    }
+}
+```
+This interface has three methods.
+- `convert` - the actual method that does the conversion of type `S` to type `T`.
+- `source` - source class, it should be of type `S`. 
+- `target` - target class, it should be of type `T`.
+
+The `source` and `target` is used internally to determine if the attribute converter is appropriate to be used for a field.
+
+An attribute converter must always be annotated with the `@Converter` annotation to let the mapper know it is an attribute converter. 
+The annotation can accept one value which is `autoApply`. `autoApply` determines whether to automatically apply the converter when possible. The default value is `false`
+
+
+#### Available attribute converters
+The library currently provides a few out of the box attribute converters.
+
+- `TimestampToLocalDateTimeConverter` - converts a value of type `java.sql.Timestamp` to `java.time.LocalDateTime`
+- `DateToLocalDateConverter` - converts a value of type `java.sql.Date` to `java.time.LocalDate`
+- `TimeToLocalTimeConverter` - converts a value of type `java.sql.Time` to `java.time.LocalTime`
+
+You can also define your own attribute converters by implementing the `AttributeConverter<S, T>` interface. 
+After having defined it you must register this attribute converter. You can register it by calling the `registerAttributeConverter` on the `ResultSetMapper`.
+
+### Ignoring fields
 The library allows you to annotate class fields with `@Ignore`. This annotation can be used on a field to let the `ResultSetMapper`know that it can skip this field when mapping. This means that the `ResultSetMapper` will not try to retrieve the value from the `ResultSet` for the annotated field.
 
-### Why would I ignore a field?
+#### Why would I ignore a field?
 Let me show you an example.
 ```java
 public class User {
@@ -90,7 +157,7 @@ public class User {
 ```
 As you can see above the `User` class has an additional `List<UserPermission>` object. To retrieve that it requires an additional query and can not be mapped when mapping the initial `ResultSet`. By using the `@Ignore` annotation it can let the mapper know that it does not have to be mapped when trying to map the `User` class.
 
-## Logging
+### Logging
 The library has very extensive logging at every logging level. From `TRACE` to `ERROR`, the logging level is default set on `INFO`. 
 This means only logging messages with log level of `INFO` and above will be logged. 
 
@@ -99,7 +166,7 @@ For instance the mapper will throw warning messages when a field can not be foun
 It would be annoying to be spammed with warning message for every object that is to be mapped. 
 The library provides the `@SuppressWarnings` annotations to "suppress" these warning messages.
 
-### Class level `@SuppressWarnings`
+#### Class level `@SuppressWarnings`
 ```java
 @SuppressWarnings
 public class User {
@@ -113,7 +180,7 @@ public class User {
 ```
 This will suppress all warnings for every field in the annotated class.
 
-### Field level `@SuppressWarnings`
+#### Field level `@SuppressWarnings`
 ```java
 
 public class User {
