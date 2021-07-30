@@ -1,8 +1,11 @@
 package nl.jiankai.mapper;
 
-import nl.jiankai.annotations.Column;
-import nl.jiankai.annotations.Ignore;
 import nl.jiankai.annotations.SuppressWarnings;
+import nl.jiankai.annotations.*;
+import nl.jiankai.mapper.converters.AttributeConverter;
+import nl.jiankai.mapper.converters.DateToLocalDateConverter;
+import nl.jiankai.mapper.converters.TimeToLocalTimeConverter;
+import nl.jiankai.mapper.converters.TimestampToLocalDateTimeConverter;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.FieldNamingStrategy;
 import nl.jiankai.mapper.strategies.IdentityFieldNamingStrategy;
@@ -23,12 +26,15 @@ import java.util.*;
 public class ResultSetMapper {
     private final Logger logger = LoggerFactory.getLogger(ResultSetMapper.class);
     private final FieldNamingStrategy fieldNamingStrategy;
+    private final Map<SourceAndTarget, AttributeConverter> attributeConvertersBySourceAndTarget = new HashMap<>();
+    private final Map<Class, AttributeConverter> attributeConvertersByClass = new HashMap<>();
     private boolean hasClassLevelWarningSuppression;
 
     /**
      * Builds a ResultSetMapper with default IdentityFieldNamingStrategy
      */
     public ResultSetMapper() {
+        registerAttributeConverters();
         this.fieldNamingStrategy = new IdentityFieldNamingStrategy();
         logger.info("No specific field naming strategy has been set. It will default to the {} field naming strategy.", this.fieldNamingStrategy);
     }
@@ -39,6 +45,7 @@ public class ResultSetMapper {
      * @param fieldNamingStrategy the field naming strategy to be used for mapping field names
      */
     public ResultSetMapper(final FieldNamingStrategy fieldNamingStrategy) {
+        registerAttributeConverters();
         logger.info("The {} field naming strategy will be used for mapping.", fieldNamingStrategy);
         this.fieldNamingStrategy = fieldNamingStrategy;
     }
@@ -50,6 +57,10 @@ public class ResultSetMapper {
      */
     public FieldNamingStrategy getFieldNamingStrategy() {
         return this.fieldNamingStrategy;
+    }
+
+    public void registerAttributeConverter(AttributeConverter attributeConverter) {
+        putAttributeConverterInMap(attributeConverter);
     }
 
     /**
@@ -180,7 +191,8 @@ public class ResultSetMapper {
                 logger.debug("Retrieval of '{}' has resulted to: {}", key, value);
 
                 logger.trace("Setting the value '{}' to the field: {}", value, field.getName());
-                field.set(dto, value);
+                field.set(dto, tryConvertValue(field, value));
+                logger.trace("Value set successfully.");
             } catch (SQLException ex) {
                 final boolean fieldWarningsNotSuppressed = !(hasClassLevelWarningSuppression || field.isAnnotationPresent(SuppressWarnings.class));
 
@@ -191,5 +203,90 @@ public class ResultSetMapper {
         }
 
         return dto;
+    }
+
+    /**
+     * Tries to convert a value of one type to another if the appropriate {@link AttributeConverter} for that exists.
+     *
+     * @param value the value to be converted
+     * @return a value that is either converter or not
+     */
+    private Object tryConvertValue(Field field, Object value) {
+        AttributeConverter attributeConverter;
+        logger.trace("Finding annotation {}", Convert.class);
+        Convert convertAnnotation = field.getAnnotation(Convert.class);
+
+        if (convertAnnotation != null) {
+            logger.trace("{} annotation found!", Converter.class);
+            logger.trace("Retrieving attribute converter {}", convertAnnotation.converter());
+            attributeConverter = attributeConvertersByClass.get(convertAnnotation.converter());
+
+            if (attributeConverter != null) {
+                logger.trace("Attribute converter {} found!", convertAnnotation.converter());
+                logger.trace("Converting value");
+
+                return attributeConverter.convert(value);
+            }
+        } else {
+            logger.trace("{} annotation not found", Converter.class);
+            logger.trace("Retrieving attribute converter for {} to {}", value.getClass(), field.getType());
+            attributeConverter = attributeConvertersBySourceAndTarget.get(new SourceAndTarget(value.getClass(), field.getType()));
+
+            if (attributeConverter != null) {
+                logger.trace("Attribute converter {} found!", attributeConverter.getClass());
+                logger.trace("Finding annotation {}", Converter.class);
+                Converter converterAnnotation = attributeConverter.getClass().getAnnotation(Converter.class);
+
+                if (converterAnnotation != null && converterAnnotation.autoApply()) {
+                    logger.trace("Annotation {} found and autoApply is on", converterAnnotation.getClass());
+                    logger.trace("Converting value");
+                    return attributeConverter.convert(value);
+                }
+            }
+        }
+
+        return value;
+    }
+
+    /**
+     * Registers all out of the box {@link AttributeConverter}
+     */
+    private void registerAttributeConverters() {
+        var timestampToLocalDateTimeConverter = new TimestampToLocalDateTimeConverter();
+        var dateToLocalDateConverter = new DateToLocalDateConverter();
+        var timeToLocalTimeConverter = new TimeToLocalTimeConverter();
+
+        putAttributeConverterInMap(timestampToLocalDateTimeConverter);
+        putAttributeConverterInMap(dateToLocalDateConverter);
+        putAttributeConverterInMap(timeToLocalTimeConverter);
+    }
+
+    private void putAttributeConverterInMap(AttributeConverter attributeConverter) {
+        logger.trace("Registering attribute converter {}", attributeConverter.getClass());
+        attributeConvertersBySourceAndTarget.put(new SourceAndTarget(attributeConverter.source(), attributeConverter.target()), attributeConverter);
+        attributeConvertersByClass.put(attributeConverter.getClass(), attributeConverter);
+    }
+
+    private class SourceAndTarget {
+        private Class source;
+        private Class target;
+
+        public SourceAndTarget(Class source, Class target) {
+            this.source = source;
+            this.target = target;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SourceAndTarget that = (SourceAndTarget) o;
+            return Objects.equals(source, that.source) && Objects.equals(target, that.target);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(source, target);
+        }
     }
 }
