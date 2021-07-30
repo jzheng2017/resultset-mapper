@@ -236,8 +236,9 @@ public class ResultSetMapper {
                 logger.trace("Attribute converter {} found!", attributeConverter.getClass());
                 logger.trace("Finding annotation {}", Converter.class);
                 Converter converterAnnotation = attributeConverter.getClass().getAnnotation(Converter.class);
-
-                if (converterAnnotation != null && converterAnnotation.autoApply()) {
+                if (converterAnnotation == null) {
+                    logger.trace("An attribute converter has been found but no {} annotation was present. Therefore converting will not be done.", Converter.class);
+                } else if (converterAnnotation.autoApply()) {
                     logger.trace("Annotation {} found and autoApply is on", converterAnnotation.getClass());
                     logger.trace("Converting value");
                     return attributeConverter.convert(value);
