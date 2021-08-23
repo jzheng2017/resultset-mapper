@@ -1,7 +1,10 @@
 package nl.jiankai.mapper;
 
+import nl.jiankai.annotations.Column;
+import nl.jiankai.annotations.Convert;
+import nl.jiankai.annotations.Converter;
+import nl.jiankai.annotations.Ignore;
 import nl.jiankai.annotations.SuppressWarnings;
-import nl.jiankai.annotations.*;
 import nl.jiankai.mapper.converters.AttributeConverter;
 import nl.jiankai.mapper.converters.DateToLocalDateConverter;
 import nl.jiankai.mapper.converters.TimeToLocalTimeConverter;
@@ -12,11 +15,18 @@ import nl.jiankai.mapper.strategies.IdentityFieldNamingStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * This class allows the user to map a ResultSet to their desired model object
@@ -25,6 +35,7 @@ import java.util.*;
  */
 public class ResultSetMapper {
     private final Logger logger = LoggerFactory.getLogger(ResultSetMapper.class);
+    private final ClassCache classCache = new ClassCache();
     private final FieldNamingStrategy fieldNamingStrategy;
     private final Map<SourceAndTarget, AttributeConverter> attributeConvertersBySourceAndTarget = new HashMap<>();
     private final Map<Class, AttributeConverter> attributeConvertersByClass = new HashMap<>();
@@ -73,7 +84,7 @@ public class ResultSetMapper {
      */
     public <T> List<T> map(final ResultSet resultSet, final Class<T> destinationClass) {
         final List<T> list = new ArrayList<>();
-        this.hasClassLevelWarningSuppression = destinationClass.isAnnotationPresent(SuppressWarnings.class);
+        this.hasClassLevelWarningSuppression = classCache.isAnnotationPresent(destinationClass, SuppressWarnings.class);
 
         try {
             if (resultSet == null || !resultSet.isBeforeFirst()) {
@@ -82,7 +93,7 @@ public class ResultSetMapper {
             }
 
             logger.info("Commencing mapping ResultSet to {}", destinationClass);
-            final Map<String, Field> fields = getFields(destinationClass);
+            final Map<String, Field> fields = classCache.getFields(destinationClass);
 
             while (resultSet.next()) {
                 logger.trace("Adding new {} to the list", destinationClass);
@@ -90,82 +101,11 @@ public class ResultSetMapper {
             }
         } catch (SQLException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException ex) {
             logger.error("Something has gone wrong while mapping! Exception: " + ex.getMessage());
-            throw new MappingFailedException(ex.getMessage());
+            throw new MappingFailedException("Something has gone wrong while mapping!", ex);
         }
 
         logger.info("ResultSet has been successfully mapped to {}", destinationClass);
         return list;
-    }
-
-    /**
-     * Get all declared fields of the destination class
-     *
-     * @param destinationClass the class to map to
-     * @param <T>              the desired class
-     * @return all declared fields mapped based on the field naming strategy
-     */
-    private <T> Map<String, Field> getFields(final Class<T> destinationClass) {
-        final Map<String, Field> mappedFields = new HashMap<>();
-        logger.trace("Retrieving all declared fields for class: {}", destinationClass);
-        final List<Field> declaredFields = getFields(new ArrayList<>(), destinationClass);
-
-        for (Field field : declaredFields) {
-            if (!field.isAnnotationPresent(Ignore.class)) {
-                mapFieldName(mappedFields, field);
-            }
-        }
-
-        return mappedFields;
-    }
-
-    /**
-     * Get all public, protected and private fields recursively (including fields from the super classes)
-     *
-     * @param fields a list of fields
-     * @param type   the destination class
-     * @return list of all fields of the passed in class
-     * @since 1.4.0
-     */
-    private List<Field> getFields(List<Field> fields, Class<?> type) {
-        logger.trace("Adding all declared fields from class {}", type);
-        fields.addAll(Arrays.asList(type.getDeclaredFields()));
-
-        if (type.getSuperclass() != null) {
-            logger.trace("Retrieving declared fields from class {}", type);
-            getFields(fields, type.getSuperclass());
-        }
-
-        return fields;
-    }
-
-    /**
-     * Maps the field based on the field naming strategy
-     *
-     * @param mappedFields the list of mapped fields
-     * @param field        the field to be mapped
-     */
-    private void mapFieldName(Map<String, Field> mappedFields, Field field) {
-        final String fieldName = field.getName();
-
-        logger.trace("Retrieving @Column annotation for field '{}'", fieldName);
-        final Column columnAnnotation = field.getAnnotation(Column.class);
-
-        logger.trace("Setting '{}' accessibility to true", fieldName);
-        field.setAccessible(true);
-
-        if (columnAnnotation != null) {
-            final String columnName = columnAnnotation.name();
-
-            logger.trace("@Column annotation found for '{}'", fieldName);
-            logger.trace("The field name strategy will be overruled. Mapping '{}' to '{}'", fieldName, columnName);
-            mappedFields.put(columnName, field);
-        } else {
-            final String transformedName = fieldNamingStrategy.transform(fieldName);
-
-            logger.trace("No @Column annotation found for '{}'", fieldName);
-            logger.trace("Mapping '{}' to '{}'", fieldName, transformedName);
-            mappedFields.put(transformedName, field);
-        }
     }
 
     /**
@@ -186,7 +126,7 @@ public class ResultSetMapper {
             final Field field = entry.getValue();
 
             try {
-                logger.trace("Retrieving '{}' from the ResultSet", key);
+                logger.trace("Fetching '{}' from the ResultSet", key);
                 final Object value = resultSet.getObject(key);
                 logger.debug("Retrieval of '{}' has resulted to: {}", key, value);
 
@@ -194,10 +134,10 @@ public class ResultSetMapper {
                 field.set(dto, tryConvertValue(field, value));
                 logger.trace("Value set successfully.");
             } catch (SQLException ex) {
-                final boolean fieldWarningsNotSuppressed = !(hasClassLevelWarningSuppression || field.isAnnotationPresent(SuppressWarnings.class));
+                final boolean fieldWarningsNotSuppressed = !(hasClassLevelWarningSuppression || classCache.isFieldAnnotationPresent(field, SuppressWarnings.class));
 
                 if (fieldWarningsNotSuppressed) {
-                    logger.warn(ex.getMessage());
+                    logger.warn("Something went wrong while trying to construct the object.", ex);
                 }
             }
         }
@@ -214,11 +154,11 @@ public class ResultSetMapper {
     private Object tryConvertValue(Field field, Object value) {
         AttributeConverter attributeConverter;
         logger.trace("Finding annotation {}", Convert.class);
-        Convert convertAnnotation = field.getAnnotation(Convert.class);
+        Convert convertAnnotation = classCache.getFieldAnnotation(field, Convert.class);
 
         if (convertAnnotation != null) {
             logger.trace("{} annotation found!", Converter.class);
-            logger.trace("Retrieving attribute converter {}", convertAnnotation.converter());
+            logger.trace("Fetching attribute converter {}", convertAnnotation.converter());
             attributeConverter = attributeConvertersByClass.get(convertAnnotation.converter());
 
             if (attributeConverter != null) {
@@ -229,13 +169,13 @@ public class ResultSetMapper {
             }
         } else {
             logger.trace("{} annotation not found", Converter.class);
-            logger.trace("Retrieving attribute converter for {} to {}", value.getClass(), field.getType());
+            logger.trace("Fetching attribute converter for {} to {}", value.getClass(), field.getType());
             attributeConverter = attributeConvertersBySourceAndTarget.get(new SourceAndTarget(value.getClass(), field.getType()));
 
             if (attributeConverter != null) {
                 logger.trace("Attribute converter {} found!", attributeConverter.getClass());
                 logger.trace("Finding annotation {}", Converter.class);
-                Converter converterAnnotation = attributeConverter.getClass().getAnnotation(Converter.class);
+                Converter converterAnnotation = classCache.getAnnotation(attributeConverter.getClass(), Converter.class);
                 if (converterAnnotation == null) {
                     logger.trace("An attribute converter has been found but no {} annotation was present. Therefore converting will not be done.", Converter.class);
                 } else if (converterAnnotation.autoApply()) {
@@ -268,9 +208,176 @@ public class ResultSetMapper {
         attributeConvertersByClass.put(attributeConverter.getClass(), attributeConverter);
     }
 
+
+    /**
+     * This class fetches the class reflection data. After fetching it for the first time it will keep the class data in the cache so that it can retrieved later if desired.
+     *
+     * @author Jiankai Zheng (jk.zheng@hotmail.com)
+     * @since 1.6.0
+     */
+    private class ClassCache {
+        private final Logger logger = LoggerFactory.getLogger(ClassCache.class);
+        private final Map<Class, Map<String, Field>> cachedClassFields = new HashMap<>();
+        private final Map<Class, Map<Class, Annotation>> cachedClassAnnotations = new HashMap<>();
+        private final Map<Field, Map<Class, Annotation>> cachedFieldAnnotations = new HashMap<>();
+
+        /**
+         * Get annotation of a class from cache. If it's not present in the cache it will try to fetch it through reflection.
+         *
+         * @param classToSearchFor      the class you want the annotation for
+         * @param annotationToSearchFor the annotation you want
+         * @return the annotation
+         */
+        public <T> T getAnnotation(Class classToSearchFor, Class<T> annotationToSearchFor) {
+            Map<Class, Annotation> cachedAnnotations = cachedClassAnnotations.get(classToSearchFor);
+
+            if (cachedAnnotations == null) {
+                cachedAnnotations = Arrays.stream(classToSearchFor.getAnnotations()).collect(Collectors.toMap(Annotation::annotationType, annotation -> annotation));
+                cachedClassAnnotations.put(classToSearchFor, cachedAnnotations);
+            }
+
+            return (T) cachedClassAnnotations.get(classToSearchFor).get(annotationToSearchFor);
+        }
+
+        /**
+         * Get annotation of a field from cache. If it's not present in the cache it will try to fetch it through reflection.
+         *
+         * @param fieldToSearchFor      the field you want the annotation for
+         * @param annotationToSearchFor the annotation you want
+         * @return the annotation
+         */
+        public <T> T getFieldAnnotation(Field fieldToSearchFor, Class<T> annotationToSearchFor) {
+            Map<Class, Annotation> cachedAnnotations = cachedFieldAnnotations.get(fieldToSearchFor);
+
+            if (cachedAnnotations == null) {
+                cachedAnnotations = Arrays.stream(fieldToSearchFor.getAnnotations()).collect(Collectors.toMap(Annotation::annotationType, annotation -> annotation));
+                cachedFieldAnnotations.put(fieldToSearchFor, cachedAnnotations);
+            }
+
+            return (T) cachedFieldAnnotations.get(fieldToSearchFor).get(annotationToSearchFor);
+        }
+
+        /**
+         * Tells whether an annotation is present for a particular class.
+         *
+         * @param classToSearchFor      the class you want to look at
+         * @param annotationToSearchFor the annotation you want to find
+         * @return whether it's present or not
+         */
+        public boolean isAnnotationPresent(Class classToSearchFor, Class annotationToSearchFor) {
+            return getAnnotation(classToSearchFor, annotationToSearchFor) != null;
+        }
+
+        /**
+         * Tells whether an annotation is present for a particular field.
+         *
+         * @param fieldToSearchFor      the field you want to look at
+         * @param annotationToSearchFor the annotation you want to find
+         * @return whether it's present or not
+         */
+        public boolean isFieldAnnotationPresent(Field fieldToSearchFor, Class annotationToSearchFor) {
+            return getFieldAnnotation(fieldToSearchFor, annotationToSearchFor) != null;
+        }
+
+        /**
+         * Get all declared fields of the destination class
+         *
+         * @param classToSearchFor the class you want the fields of
+         * @param <T>              the desired class
+         * @return all declared fields mapped based on the field naming strategy
+         */
+        public <T> Map<String, Field> getFields(final Class<T> classToSearchFor) {
+            logger.trace("Trying to fetch {} fields from cache..", classToSearchFor);
+            Map<String, Field> fields = cachedClassFields.get(classToSearchFor);
+
+            if (fields == null) {
+                logger.trace("{} is not available in the cache.", classToSearchFor);
+                fields = getFieldsAndPutInCache(classToSearchFor);
+            }
+
+            return Map.copyOf(fields);
+        }
+
+        /**
+         * Get all fields from the specified class and put it in the cache and return the list of fields.
+         *
+         * @param clazz the class you want the fields of
+         * @param <T>   the type of class
+         * @return the fields of the class
+         */
+        private <T> Map<String, Field> getFieldsAndPutInCache(Class<T> clazz) {
+            final Map<String, Field> fields = new HashMap<>();
+
+            logger.trace("Fetching all declared fields for class: {}", clazz);
+            final List<Field> declaredFields = getFields(new ArrayList<>(), clazz);
+
+
+            for (Field field : declaredFields) {
+                if (!field.isAnnotationPresent(Ignore.class)) {
+                    mapFieldName(fields, field);
+                }
+            }
+
+            logger.trace("{} fetched. Saving to cache.", clazz);
+            cachedClassFields.put(clazz, fields);
+            return fields;
+        }
+
+        /**
+         * Get all public, protected and private fields recursively (including fields from the super classes)
+         *
+         * @param fields a list of fields
+         * @param type   the destination class
+         * @return list of all fields of the passed in class
+         * @since 1.4.0
+         */
+        private List<Field> getFields(List<Field> fields, Class<?> type) {
+            logger.trace("Adding all declared fields from class {}", type);
+            fields.addAll(Arrays.asList(type.getDeclaredFields()));
+
+            if (type.getSuperclass() != null) {
+                logger.trace("Retrieving declared fields from class {}", type);
+                getFields(fields, type.getSuperclass());
+            }
+
+            return fields;
+        }
+
+
+        /**
+         * Maps the field based on the field naming strategy
+         *
+         * @param mappedFields the list of mapped fields
+         * @param field        the field to be mapped
+         */
+        private void mapFieldName(Map<String, Field> mappedFields, Field field) {
+            final String fieldName = field.getName();
+
+            logger.trace("Fetching @Column annotation for field '{}'", fieldName);
+            final Column columnAnnotation = field.getAnnotation(Column.class);
+
+            logger.trace("Setting '{}' accessibility to true", fieldName);
+            field.setAccessible(true);
+
+            if (columnAnnotation != null) {
+                final String columnName = columnAnnotation.name();
+
+                logger.trace("@Column annotation found for '{}'", fieldName);
+                logger.trace("The field name strategy will be overruled. Mapping '{}' to '{}'", fieldName, columnName);
+                mappedFields.put(columnName, field);
+            } else {
+                final String transformedName = fieldNamingStrategy.transform(fieldName);
+
+                logger.trace("No @Column annotation found for '{}'", fieldName);
+                logger.trace("Mapping '{}' to '{}'", fieldName, transformedName);
+                mappedFields.put(transformedName, field);
+            }
+        }
+    }
+
     private class SourceAndTarget {
-        private Class source;
-        private Class target;
+        private final Class source;
+        private final Class target;
 
         public SourceAndTarget(Class source, Class target) {
             this.source = source;

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.PrintWriter;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -123,7 +124,7 @@ public class ResultSetMapperTest {
         when(mockedResultSet.getObject("test2")).thenThrow(mockedException);
 
         sut.map(mockedResultSet, SuppressOnClassLevel.class);
-        verify(mockedException, times(0)).getMessage();
+        verifyNoInteractions(mockedException);
     }
 
     @Test
@@ -134,7 +135,8 @@ public class ResultSetMapperTest {
         when(mockedResultSet.getObject("test2")).thenThrow(mockedException);
 
         sut.map(mockedResultSet, SuppressOnFieldLevel.class);
-        verify(mockedException).getMessage();
+
+        verify(mockedException).printStackTrace(any(PrintWriter.class));
     }
 
     @Test
@@ -178,6 +180,7 @@ public class ResultSetMapperTest {
         Assertions.assertNotNull(persons.get(0).getDateOfBirth());
         Assertions.assertNotNull(persons.get(0).getTimeOfBirth());
     }
+
 
     private void populatedResultSetBaseChildClassIdentity() {
         sut = new ResultSetMapper();
