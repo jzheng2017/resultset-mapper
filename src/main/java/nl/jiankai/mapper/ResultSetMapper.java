@@ -152,6 +152,10 @@ public class ResultSetMapper {
      * @return a value that is either converter or not
      */
     private Object tryConvertValue(Field field, Object value) {
+        if (value == null) {
+            return null;
+        }
+
         AttributeConverter attributeConverter;
         logger.trace("Finding annotation {}", Convert.class);
         Convert convertAnnotation = classCache.getFieldAnnotation(field, Convert.class);
