@@ -5,6 +5,7 @@ import nl.jiankai.annotations.Converter;
 import nl.jiankai.mapper.ResultSetMapper;
 import nl.jiankai.mapper.converters.AttributeConverter;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
+import nl.jiankai.mapper.strategies.IdentityFieldNamingStrategy;
 import nl.jiankai.mapper.strategies.LowerCaseDashesFieldNamingStrategy;
 import nl.jiankai.mapper.strategies.LowerCaseUnderscoreFieldNamingStrategy;
 import org.junit.jupiter.api.Assertions;
@@ -181,6 +182,18 @@ public class ResultSetMapperTest {
         Assertions.assertNotNull(persons.get(0).getTimeOfBirth());
     }
 
+    @Test
+    void resultSetMapperCorrectlyHandlesNullValues() {
+        populatedResultSetWithNullValues();
+        List<User> users = sut.map(mockedResultSet, User.class);
+
+        Assertions.assertEquals(1, users.get(0).getId());
+        Assertions.assertEquals("first_name", users.get(0).getFirstName());
+        Assertions.assertEquals("last_name", users.get(0).getLastName());
+        Assertions.assertNull(users.get(0).getEmail());
+        Assertions.assertEquals("birthDate", users.get(0).getBirthDate());
+    }
+
 
     private void populatedResultSetBaseChildClassIdentity() {
         sut = new ResultSetMapper();
@@ -288,6 +301,21 @@ public class ResultSetMapperTest {
             when(mockedResultSet.getObject("last_name")).thenReturn("last_name");
             when(mockedResultSet.getObject("email")).thenReturn("email");
             when(mockedResultSet.getObject("birth-date")).thenReturn("birth-date");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void populatedResultSetWithNullValues() {
+        try {
+            sut = new ResultSetMapper(new IdentityFieldNamingStrategy());
+            when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+            when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+            when(mockedResultSet.getObject("id")).thenReturn(1);
+            when(mockedResultSet.getObject("first_name")).thenReturn("first_name");
+            when(mockedResultSet.getObject("last_name")).thenReturn("last_name");
+            when(mockedResultSet.getObject("email")).thenReturn(null);
+            when(mockedResultSet.getObject("birthDate")).thenReturn("birthDate");
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
