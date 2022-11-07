@@ -63,10 +63,12 @@ public class ResultSetMapperTest {
         populatedResultSetIdentity();
         List<User> users = sut.map(mockedResultSet, User.class);
 
-        Assertions.assertEquals(1, users.get(0).getId());
-        Assertions.assertEquals("firstName", users.get(0).getFirstName());
-        Assertions.assertEquals("lastName", users.get(0).getLastName());
-        Assertions.assertEquals("email", users.get(0).getEmail());
+        User actualMappedUser = users.get(0);
+
+        Assertions.assertEquals(1, actualMappedUser.getId());
+        Assertions.assertEquals("firstName", actualMappedUser.getFirstName());
+        Assertions.assertEquals("lastName", actualMappedUser.getLastName());
+        Assertions.assertEquals("email", actualMappedUser.getEmail());
     }
 
     @Test
@@ -74,11 +76,13 @@ public class ResultSetMapperTest {
         populatedResultSetLowerCaseUnderscore();
         List<User> users = sut.map(mockedResultSet, User.class);
 
-        Assertions.assertEquals(1, users.get(0).getId());
-        Assertions.assertEquals("first_name", users.get(0).getFirstName());
-        Assertions.assertEquals("last_name", users.get(0).getLastName());
-        Assertions.assertEquals("email", users.get(0).getEmail());
-        Assertions.assertEquals("birth_date", users.get(0).getBirthDate());
+        User actualMappedUser = users.get(0);
+
+        Assertions.assertEquals(1, actualMappedUser.getId());
+        Assertions.assertEquals("first_name", actualMappedUser.getFirstName());
+        Assertions.assertEquals("last_name", actualMappedUser.getLastName());
+        Assertions.assertEquals("email", actualMappedUser.getEmail());
+        Assertions.assertEquals("birth_date", actualMappedUser.getBirthDate());
     }
 
     @Test
@@ -86,11 +90,13 @@ public class ResultSetMapperTest {
         populatedResultSetLowerCaseDashes();
         List<User> users = sut.map(mockedResultSet, User.class);
 
-        Assertions.assertEquals(1, users.get(0).getId());
-        Assertions.assertEquals("first_name", users.get(0).getFirstName());
-        Assertions.assertEquals("last_name", users.get(0).getLastName());
-        Assertions.assertEquals("email", users.get(0).getEmail());
-        Assertions.assertEquals("birth-date", users.get(0).getBirthDate());
+        User actualMappedUser = users.get(0);
+
+        Assertions.assertEquals(1, actualMappedUser.getId());
+        Assertions.assertEquals("first_name", actualMappedUser.getFirstName());
+        Assertions.assertEquals("last_name", actualMappedUser.getLastName());
+        Assertions.assertEquals("email", actualMappedUser.getEmail());
+        Assertions.assertEquals("birth-date", actualMappedUser.getBirthDate());
     }
 
     @Test
@@ -146,9 +152,11 @@ public class ResultSetMapperTest {
 
         List<Child> children = sut.map(mockedResultSet, Child.class);
 
-        Assertions.assertEquals(10, children.get(0).getBaseAttribute());
-        Assertions.assertEquals("overridden_name", children.get(0).getOverriddenBaseAttribute());
-        Assertions.assertEquals("childAttribute", children.get(0).getChildAttribute());
+        Child actualMappedChild = children.get(0);
+
+        Assertions.assertEquals(10, actualMappedChild.getBaseAttribute());
+        Assertions.assertEquals("overridden_name", actualMappedChild.getOverriddenBaseAttribute());
+        Assertions.assertEquals("childAttribute", actualMappedChild.getChildAttribute());
 
     }
 
@@ -166,9 +174,11 @@ public class ResultSetMapperTest {
 
         List<Person> persons = sut.map(mockedResultSet, Person.class);
 
-        Assertions.assertNotNull(persons.get(0).getChildRegistered());
-        Assertions.assertNotNull(persons.get(0).getDateOfBirth());
-        Assertions.assertNotNull(persons.get(0).getTimeOfBirth());
+        Person actualMappedPerson = persons.get(0);
+
+        Assertions.assertNotNull(actualMappedPerson.getChildRegistered());
+        Assertions.assertNotNull(actualMappedPerson.getDateOfBirth());
+        Assertions.assertNotNull(actualMappedPerson.getTimeOfBirth());
     }
 
     @Test
@@ -177,9 +187,11 @@ public class ResultSetMapperTest {
 
         List<PersonConvertAnnotations> persons = sut.map(mockedResultSet, PersonConvertAnnotations.class);
 
-        Assertions.assertNotNull(persons.get(0).getChildRegistered());
-        Assertions.assertNotNull(persons.get(0).getDateOfBirth());
-        Assertions.assertNotNull(persons.get(0).getTimeOfBirth());
+        PersonConvertAnnotations actualMappedPerson = persons.get(0);
+
+        Assertions.assertNotNull(actualMappedPerson.getChildRegistered());
+        Assertions.assertNotNull(actualMappedPerson.getDateOfBirth());
+        Assertions.assertNotNull(actualMappedPerson.getTimeOfBirth());
     }
 
     @Test
@@ -187,11 +199,13 @@ public class ResultSetMapperTest {
         populatedResultSetWithNullValues();
         List<User> users = sut.map(mockedResultSet, User.class);
 
-        Assertions.assertEquals(1, users.get(0).getId());
-        Assertions.assertEquals("first_name", users.get(0).getFirstName());
-        Assertions.assertEquals("last_name", users.get(0).getLastName());
-        Assertions.assertNull(users.get(0).getEmail());
-        Assertions.assertEquals("birthDate", users.get(0).getBirthDate());
+        User actualMappedUser = users.get(0);
+
+        Assertions.assertEquals(1, actualMappedUser.getId());
+        Assertions.assertEquals("first_name", actualMappedUser.getFirstName());
+        Assertions.assertEquals("last_name", actualMappedUser.getLastName());
+        Assertions.assertNull(actualMappedUser.getEmail());
+        Assertions.assertEquals("birthDate", actualMappedUser.getBirthDate());
     }
 
     @Test
