@@ -153,7 +153,11 @@ public class ResultSetMapper {
      */
     private Object tryConvertValue(Field field, Object value) {
         if (value == null) {
-            return null;
+            if (classCache.isFieldOfPrimitiveType(field)) {
+                return ClassTypeUtil.getDefaultValueForPrimitiveType(field.getType());
+            } else {
+                return null;
+            }
         }
 
         AttributeConverter attributeConverter;
@@ -224,6 +228,7 @@ public class ResultSetMapper {
         private final Map<Class, Map<String, Field>> cachedClassFields = new HashMap<>();
         private final Map<Class, Map<Class, Annotation>> cachedClassAnnotations = new HashMap<>();
         private final Map<Field, Map<Class, Annotation>> cachedFieldAnnotations = new HashMap<>();
+        private final Map<Field, Boolean> cachedPrimitiveFields = new HashMap<>();
 
         /**
          * Get annotation of a class from cache. If it's not present in the cache it will try to fetch it through reflection.
@@ -303,6 +308,15 @@ public class ResultSetMapper {
         }
 
         /**
+         * Determines whether the provided {@link Field} is of a primitive type (ex. int).
+         * @param field the field you want to check the type of
+         * @return whether the field is of primitive type (true = primitive)
+         */
+        public boolean isFieldOfPrimitiveType(Field field) {
+            return cachedPrimitiveFields.computeIfAbsent(field, ClassTypeUtil::isPrimitiveType);
+        }
+
+        /**
          * Get all fields from the specified class and put it in the cache and return the list of fields.
          *
          * @param clazz the class you want the fields of
@@ -375,6 +389,62 @@ public class ResultSetMapper {
                 logger.trace("No @Column annotation found for '{}'", fieldName);
                 logger.trace("Mapping '{}' to '{}'", fieldName, transformedName);
                 mappedFields.put(transformedName, field);
+            }
+        }
+    }
+
+    /**
+     * A utility class for checking whether a given field/class is a primitive type and retrieving its default value.
+     * @author Jiankai Zheng (jk.zheng@hotmail.com)
+     * @since 1.6.2
+     */
+    private static class ClassTypeUtil {
+        private static final Logger logger = LoggerFactory.getLogger(ClassTypeUtil.class);
+        private static boolean DEFAULT_BOOLEAN;
+        private static byte DEFAULT_BYTE;
+        private static short DEFAULT_SHORT;
+        private static int DEFAULT_INT;
+        private static long DEFAULT_LONG;
+        private static float DEFAULT_FLOAT;
+        private static double DEFAULT_DOUBLE;
+        private static char DEFAULT_CHAR;
+
+        /**
+         * Determines whether the provided {@link Field} is of primitive type (ex. int).
+         * @param field the field to check for
+         * @return a primitive type or not (true = primitive)
+         */
+        public static boolean isPrimitiveType(Field field) {
+            logger.trace("Checking type for field {} which is of type {}", field, field.getType());
+            return field.getType().isPrimitive();
+        }
+
+        /**
+         * Get the default value for the provided primitive type (ex. 0 for int).
+         * @param primitiveType the primitive type you want to get the default value for
+         * @return the default value of the primitive type
+         */
+        public static Object getDefaultValueForPrimitiveType(Class<?> primitiveType) {
+            logger.trace("Getting default value for type {}", primitiveType.getTypeName());
+
+            if (primitiveType == Boolean.TYPE) {
+                return DEFAULT_BOOLEAN;
+            } else if (primitiveType == Integer.TYPE) {
+                return DEFAULT_INT;
+            } else if (primitiveType == Short.TYPE) {
+                return DEFAULT_SHORT;
+            } else if (primitiveType == Byte.TYPE) {
+                return DEFAULT_BYTE;
+            } else if (primitiveType == Double.TYPE) {
+                return DEFAULT_DOUBLE;
+            } else if (primitiveType == Long.TYPE) {
+                return DEFAULT_LONG;
+            } else if (primitiveType == Float.TYPE) {
+                return DEFAULT_FLOAT;
+            } else if (primitiveType == Character.TYPE) {
+                return DEFAULT_CHAR;
+            } else {
+                throw new IllegalArgumentException(String.format("Provided class '%s' is not a primitive type", primitiveType.getName()));
             }
         }
     }
