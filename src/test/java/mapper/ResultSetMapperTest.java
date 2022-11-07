@@ -194,6 +194,23 @@ public class ResultSetMapperTest {
         Assertions.assertEquals("birthDate", users.get(0).getBirthDate());
     }
 
+    @Test
+    void resultSetMapperCorrectlyHandlesNullValuesWithRespectToPrimitiveTypes() {
+        populatedResultSetWithOnlyNullValuesForPrimitiveTypes();
+
+        List<PrimitiveTypes> primitiveTypes = sut.map(mockedResultSet, PrimitiveTypes.class);
+        PrimitiveTypes actualMappedObject = primitiveTypes.get(0);
+
+        Assertions.assertEquals(0, actualMappedObject.getIntegerVar());
+        Assertions.assertEquals(0.0d, actualMappedObject.getDoubleVar());
+        Assertions.assertEquals(0L, actualMappedObject.getLongVar());
+        Assertions.assertEquals(0.0f, actualMappedObject.getFloatVar());
+        Assertions.assertEquals('\u0000', actualMappedObject.getCharVar());
+        Assertions.assertEquals(0, actualMappedObject.getShortVar());
+        Assertions.assertEquals(0, actualMappedObject.getByteVar());
+        Assertions.assertFalse(actualMappedObject.isBooleanVar());
+    }
+
 
     private void populatedResultSetBaseChildClassIdentity() {
         sut = new ResultSetMapper();
@@ -316,6 +333,24 @@ public class ResultSetMapperTest {
             when(mockedResultSet.getObject("last_name")).thenReturn("last_name");
             when(mockedResultSet.getObject("email")).thenReturn(null);
             when(mockedResultSet.getObject("birthDate")).thenReturn("birthDate");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void populatedResultSetWithOnlyNullValuesForPrimitiveTypes() {
+        try {
+            sut = new ResultSetMapper(new IdentityFieldNamingStrategy());
+            when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+            when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+            when(mockedResultSet.getObject("integerVar")).thenReturn(null);
+            when(mockedResultSet.getObject("longVar")).thenReturn(null);
+            when(mockedResultSet.getObject("byteVar")).thenReturn(null);
+            when(mockedResultSet.getObject("floatVar")).thenReturn(null);
+            when(mockedResultSet.getObject("doubleVar")).thenReturn(null);
+            when(mockedResultSet.getObject("booleanVar")).thenReturn(null);
+            when(mockedResultSet.getObject("shortVar")).thenReturn(null);
+            when(mockedResultSet.getObject("charVar")).thenReturn(null);
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
