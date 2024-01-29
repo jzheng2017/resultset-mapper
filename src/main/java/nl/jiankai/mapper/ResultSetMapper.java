@@ -5,10 +5,7 @@ import nl.jiankai.annotations.Convert;
 import nl.jiankai.annotations.Converter;
 import nl.jiankai.annotations.Ignore;
 import nl.jiankai.annotations.SuppressWarnings;
-import nl.jiankai.mapper.converters.AttributeConverter;
-import nl.jiankai.mapper.converters.DateToLocalDateConverter;
-import nl.jiankai.mapper.converters.TimeToLocalTimeConverter;
-import nl.jiankai.mapper.converters.TimestampToLocalDateTimeConverter;
+import nl.jiankai.mapper.converters.*;
 import nl.jiankai.mapper.exceptions.MappingFailedException;
 import nl.jiankai.mapper.strategies.FieldNamingStrategy;
 import nl.jiankai.mapper.strategies.IdentityFieldNamingStrategy;
@@ -204,10 +201,18 @@ public class ResultSetMapper {
         var timestampToLocalDateTimeConverter = new TimestampToLocalDateTimeConverter();
         var dateToLocalDateConverter = new DateToLocalDateConverter();
         var timeToLocalTimeConverter = new TimeToLocalTimeConverter();
+        var arrayToStringArrayConverter = new ArrayToStringArrayConverter();
+        var clobToStringConverter = new ClobToStringConverter();
+        var refToObjectConverter = new RefToObjectConverter();
+        var structToObjectArrayConverter = new StructToObjectArrayConverter();
 
         putAttributeConverterInMap(timestampToLocalDateTimeConverter);
         putAttributeConverterInMap(dateToLocalDateConverter);
         putAttributeConverterInMap(timeToLocalTimeConverter);
+        putAttributeConverterInMap(arrayToStringArrayConverter);
+        putAttributeConverterInMap(clobToStringConverter);
+        putAttributeConverterInMap(refToObjectConverter);
+        putAttributeConverterInMap(structToObjectArrayConverter);
     }
 
     private void putAttributeConverterInMap(AttributeConverter attributeConverter) {
