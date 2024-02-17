@@ -2,20 +2,20 @@ package nl.jiankai.mapper.converters;
 
 import nl.jiankai.annotations.Converter;
 
-import java.sql.Blob;
+import java.sql.Array;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-@Converter
-public class BlobToByteArrayConverter implements AttributeConverter<Blob, byte[]> {
+@Converter(autoApply = true)
+public class ArrayToObjectArrayConverter implements AttributeConverter<Array, Object[]> {
     private final Logger logger = Logger.getAnonymousLogger();
 
     @Override
-    public byte[] convert(Blob value) {
-        byte[] convertedValue = new byte[0];
+    public Object[] convert(Array value) {
+        Object[] convertedValue = null;
     try {
-        convertedValue = value.getBytes(1, (int) value.length());
+        convertedValue = (Object[]) value.getArray();
     }
     catch (SQLException e){
         logger.log(Level.SEVERE, "an exception was thrown", e);
@@ -24,12 +24,12 @@ public class BlobToByteArrayConverter implements AttributeConverter<Blob, byte[]
     }
 
     @Override
-    public Class<Blob> source() {
-        return Blob.class;
+    public Class<Array> source() {
+        return Array.class;
     }
 
     @Override
-    public Class<byte[]> target() {
-        return byte[].class;
+    public Class<Object[]> target() {
+        return Object[].class;
     }
 }

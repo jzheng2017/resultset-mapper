@@ -4,9 +4,12 @@ import nl.jiankai.annotations.Converter;
 
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Converter(autoApply = true)
 public class ClobToStringConverter implements AttributeConverter<Clob, String> {
+    private final Logger logger = Logger.getAnonymousLogger();
 
     @Override
     public String convert(Clob value) {
@@ -15,7 +18,7 @@ public class ClobToStringConverter implements AttributeConverter<Clob, String> {
         convertedValue = value.getSubString(1, (int) value.length());
     }
     catch (SQLException e){
-        System.out.println(e.getCause().getMessage());
+        logger.log(Level.SEVERE, "an exception was thrown", e);
     }
         return convertedValue;
     }
