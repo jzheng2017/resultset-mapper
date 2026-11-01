@@ -125,10 +125,7 @@ public class ResultSetMapperTest {
 
     @Test
     void suppressWarningsAnnotationOnClassLevelStopsLoggingForAllFields() throws SQLException {
-        when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
-        when(mockedResultSet.isBeforeFirst()).thenReturn(true);
-        when(mockedResultSet.getObject("test")).thenThrow(mockedException);
-        when(mockedResultSet.getObject("test2")).thenThrow(mockedException);
+        setupResultSetGetObjectAndIsBeforeFirstAndNextStubs();
 
         sut.map(mockedResultSet, SuppressOnClassLevel.class);
         verifyNoInteractions(mockedException);
@@ -136,10 +133,7 @@ public class ResultSetMapperTest {
 
     @Test
     void suppressWarningsAnnotationOnFieldLevelStopsLoggingForAnnotatedFields() throws SQLException {
-        when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
-        when(mockedResultSet.isBeforeFirst()).thenReturn(true);
-        when(mockedResultSet.getObject("test")).thenThrow(mockedException);
-        when(mockedResultSet.getObject("test2")).thenThrow(mockedException);
+        setupResultSetGetObjectAndIsBeforeFirstAndNextStubs();
 
         sut.map(mockedResultSet, SuppressOnFieldLevel.class);
 
@@ -387,5 +381,12 @@ public class ResultSetMapperTest {
         public Class<LocalDate> target() {
             return LocalDate.class;
         }
+    }
+
+    private void setupResultSetGetObjectAndIsBeforeFirstAndNextStubs() throws SQLException {
+        when(mockedResultSet.next()).thenReturn(true).thenReturn(false);
+        when(mockedResultSet.isBeforeFirst()).thenReturn(true);
+        when(mockedResultSet.getObject("test")).thenThrow(mockedException);
+        when(mockedResultSet.getObject("test2")).thenThrow(mockedException);
     }
 }
